@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tip of the Iceberg</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Pacifico&display=swap">
+    <style>
+        body {
+            background-image: url('calculator.png');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #container {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            margin: auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 36px;
+            margin: 0 0 20px 0;
+        }
+        @media(min-width: 768px) {
+            h1 {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <h1>Tip of the<br>Iceberg</h1>
+
+    <label for="billAmount">Bill Amount ($):</label><br>
+    <input type="number" id="billAmount" name="billAmount" oninput="calculateTip()" required><br>
+
+    <label for="tipPercentage">Tip (%):</label><br>
+    <input type="number" id="tipPercentage" name="tipPercentage" value="15" oninput="calculateTip()" required><br><br>
+
+    <p id="output"></p>
+</div>
+
+<script>
+    function calculateTip() {
+        var billAmount = parseFloat(document.getElementById('billAmount').value);
+        var tipPercentage = parseFloat(document.getElementById('tipPercentage').value);
+        
+        // Use default tip percentage of 15% if no percentage is entered
+        if (isNaN(tipPercentage)) {
+            tipPercentage = 15;
+        }
+        
+        var preliminaryTip = billAmount * (tipPercentage / 100);
+        var preliminaryTotal = billAmount + preliminaryTip;
+        
+        // Round the total amount to the nearest whole number
+        var roundedTotal = Math.round(preliminaryTotal);
+        
+        // Recalculate the tip based on the rounded total
+        var tip = roundedTotal - billAmount;
+        
+        // Calculate the effective tip percentage
+        var effectiveTipPercentage = (tip / billAmount) * 100;
+        
+        document.getElementById('output').innerHTML = 
+            `Tip: $${tip.toFixed(2)}<br>
+             Total Amount: $${roundedTotal.toFixed(2)}<br>
+             Effective Tip: ${effectiveTipPercentage.toFixed(2)}%`;
+    }
+</script>
+
+</body>
+</html>
