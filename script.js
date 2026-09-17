@@ -12,21 +12,16 @@ const detectedTotalInput = document.querySelector('#detectedTotal');
 const removePersonButton = document.querySelector('#removePerson');
 const addPersonButton = document.querySelector('#addPerson');
 const peopleCountOutput = document.querySelector('#peopleCount');
-const splitEmpty = document.querySelector('#splitEmpty');
-const splitValues = document.querySelector('#splitValues');
-const shareAmount = document.querySelector('#shareAmount');
-const tipShareAmount = document.querySelector('#tipShareAmount');
-const shareDetail = document.querySelector('#shareDetail');
-const targetRateInput = document.querySelector('#targetRate');
 const targetRateValue = document.querySelector('#targetRateValue');
 const lowerTargetButton = document.querySelector('#lowerTarget');
 const raiseTargetButton = document.querySelector('#raiseTarget');
 const optionLegend = document.querySelector('#optionLegend');
+const modeHelp = document.querySelector('#modeHelp');
 const modeButtons = [...document.querySelectorAll('.mode-tab')];
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
 let billCents = 0;
-let wholeDollarOptions = [];
+let tipOptions = [];
 let bestOptionIndex = 0;
 let selectedOptionIndex = 0;
 let peopleCount = 1;
@@ -74,19 +69,46 @@ function makeOptions(bill) {
 }
 
 function describeOption(option) {
-    return `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}%`;
+    const base = `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}% effective rate`;
+    if (peopleCount === 1) return base;
+    const split = splitOption(option);
+    return `${base} · split ${peopleCount} ways: ${currency.format(split.totalEachCents / 100)} total each and ${currency.format(split.tipEachCents / 100)} tip each`;
+}
+
+function splitOption(option) {
+    const totalCents = Math.round(option.total * 100);
+    const tipCents = Math.round(option.tip * 100);
+    return {
+        totalEachCents: Math.floor(totalCents / peopleCount),
+        tipEachCents: Math.floor(tipCents / peopleCount),
+        extraTotalShares: totalCents % peopleCount,
+        extraTipShares: tipCents % peopleCount
+    };
+}
+
+function splitNote(split) {
+    const notes = [];
+    if (split.extraTotalShares) notes.push(`${split.extraTotalShares} ${split.extraTotalShares === 1 ? 'pays' : 'pay'} ${currency.format((split.totalEachCents + 1) / 100)} total`);
+    if (split.extraTipShares) notes.push(`${split.extraTipShares} ${split.extraTipShares === 1 ? 'tips' : 'tip'} ${currency.format((split.tipEachCents + 1) / 100)}`);
+    return notes.length ? notes.join(' · ') : `${peopleCount} equal shares`;
 }
 
 function renderOptionWheel() {
     optionWheel.replaceChildren();
-    wholeDollarOptions.forEach((option, index) => {
+    tipOptions.forEach((option, index) => {
+        const split = splitOption(option);
+        const totalLabel = peopleCount > 1 ? 'Total each' : 'Total';
+        const tipLabel = peopleCount > 1 ? 'Tip each' : 'Tip';
+        const totalValue = peopleCount > 1 ? split.totalEachCents / 100 : option.total;
+        const tipValue = peopleCount > 1 ? split.tipEachCents / 100 : option.tip;
+        const note = peopleCount > 1 ? `<span class="option-split-note">${splitNote(split)}</span>` : '';
         const button = document.createElement('button');
         button.type = 'button';
         button.className = `fit-option${index === bestOptionIndex ? ' best' : ''}`;
         button.dataset.index = index;
         button.setAttribute('role', 'option');
         button.setAttribute('aria-label', describeOption(option));
-        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}<span class="option-metric"><span class="option-label">Total</span><strong>${currency.format(option.total)}</strong></span><span class="option-metric"><span class="option-label">Tip</span><strong>${currency.format(option.tip)}</strong></span><span class="option-metric"><span class="option-label">Effective</span><strong>${option.effectivePercentage.toFixed(2)}%</strong></span>`;
+        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}<span class="option-metric"><span class="option-label">${totalLabel}</span><strong>${currency.format(totalValue)}</strong></span><span class="option-metric"><span class="option-label">${tipLabel}</span><strong>${currency.format(tipValue)}</strong></span><span class="option-metric"><span class="option-label">Effective</span><strong>${option.effectivePercentage.toFixed(2)}%</strong></span>${note}`;
         button.addEventListener('click', () => selectOption(index));
         optionWheel.appendChild(button);
     });
@@ -101,51 +123,24 @@ function centerSelectedOption(behavior = 'smooth') {
 }
 
 function selectOption(index, center = true) {
-    selectedOptionIndex = Math.max(0, Math.min(wholeDollarOptions.length - 1, index));
+    selectedOptionIndex = Math.max(0, Math.min(tipOptions.length - 1, index));
     renderSelectedOption();
     if (center) centerSelectedOption();
 }
 
-function renderSplit() {
-    const option = wholeDollarOptions[selectedOptionIndex];
-    peopleCountOutput.textContent = String(peopleCount);
+function updatePeopleControl() {
+    peopleCountOutput.textContent = `${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}`;
     removePersonButton.disabled = peopleCount === 1;
     addPersonButton.disabled = peopleCount === 20;
-
-    if (!option) {
-        splitEmpty.hidden = false;
-        splitValues.hidden = true;
-        splitEmpty.textContent = 'Choose an amount before splitting.';
-        shareDetail.textContent = '';
-        return;
-    }
-    if (peopleCount === 1) {
-        splitEmpty.hidden = false;
-        splitValues.hidden = true;
-        splitEmpty.textContent = 'Add people to divide the selected amount.';
-        shareDetail.textContent = '';
-        return;
-    }
-
-    const totalCents = Math.round(option.total * 100);
-    const tipCents = Math.round(option.tip * 100);
-    const baseShareCents = Math.floor(totalCents / peopleCount);
-    const baseTipShareCents = Math.floor(tipCents / peopleCount);
-    const extraTotalCents = totalCents % peopleCount;
-    const extraTipCents = tipCents % peopleCount;
-    splitEmpty.hidden = true;
-    splitValues.hidden = false;
-    shareAmount.textContent = currency.format(baseShareCents / 100);
-    tipShareAmount.textContent = currency.format(baseTipShareCents / 100);
-    const remainderNotes = [];
-    if (extraTotalCents) remainderNotes.push(`${extraTotalCents} total ${extraTotalCents === 1 ? 'share is' : 'shares are'} ${currency.format((baseShareCents + 1) / 100)}`);
-    if (extraTipCents) remainderNotes.push(`${extraTipCents} tip ${extraTipCents === 1 ? 'share is' : 'shares are'} ${currency.format((baseTipShareCents + 1) / 100)}`);
-    shareDetail.textContent = remainderNotes.length ? remainderNotes.join(' · ') : `${peopleCount} equal shares`;
 }
 
 function changePeopleCount(change) {
     peopleCount = Math.max(1, Math.min(20, peopleCount + change));
-    renderSplit();
+    updatePeopleControl();
+    if (tipOptions.length) {
+        renderOptionWheel();
+        renderSelectedOption();
+    }
     if (navigator.vibrate) navigator.vibrate(8);
 }
 
@@ -155,8 +150,6 @@ function savePreference(key, value) {
 
 function setTargetTip(value, save = true) {
     targetTipPercentage = Math.max(5, Math.min(25, Number(value)));
-    targetRateInput.value = String(targetTipPercentage);
-    targetRateInput.setAttribute('aria-valuetext', `${targetTipPercentage} percent`);
     targetRateValue.textContent = `${targetTipPercentage}%`;
     lowerTargetButton.disabled = targetTipPercentage === 5;
     raiseTargetButton.disabled = targetTipPercentage === 25;
@@ -166,13 +159,14 @@ function setTargetTip(value, save = true) {
 
 function setRoundingMode(mode, save = true) {
     roundingMode = ['total', 'tip', 'rate'].includes(mode) ? mode : 'total';
-    const labels = {
-        total: 'Choose a whole-dollar total',
-        tip: 'Choose a whole-dollar tip',
-        rate: 'Choose a whole-percent rate'
+    const modeCopy = {
+        total: { aria: 'Compare clean-total tip options', help: 'Ends the check on a whole dollar.' },
+        tip: { aria: 'Compare whole-dollar tip options', help: 'Makes the tip itself a whole dollar.' },
+        rate: { aria: 'Compare whole-percent tip options', help: 'Matches a clean percentage as closely as cents allow.' }
     };
-    optionLegend.textContent = labels[roundingMode];
-    optionWheel.setAttribute('aria-label', labels[roundingMode]);
+    optionLegend.textContent = 'Choose your tip';
+    optionWheel.setAttribute('aria-label', modeCopy[roundingMode].aria);
+    modeHelp.textContent = modeCopy[roundingMode].help;
     modeButtons.forEach((button) => {
         const active = button.dataset.mode === roundingMode;
         button.classList.toggle('active', active);
@@ -194,8 +188,8 @@ function loadPreferences() {
 }
 
 function buildTipOptions(bill) {
-    wholeDollarOptions = makeOptions(bill);
-    if (!wholeDollarOptions.length) {
+    tipOptions = makeOptions(bill);
+    if (!tipOptions.length) {
         document.querySelector('#optionCount').textContent = 'No options yet';
         optionWheel.innerHTML = `<p class="wheel-empty">${bill > 0 ? 'No option falls within 5%–25%' : 'Enter a bill to see tip options'}</p>`;
         selectionAnnouncement.textContent = bill > 0 ? 'No option is available in the 5% to 25% range.' : '';
@@ -203,8 +197,8 @@ function buildTipOptions(bill) {
     }
 
     const preferredFloor = targetTipPercentage >= 14 ? 14 : 5;
-    const preferredOptions = wholeDollarOptions.filter((option) => option.effectivePercentage >= preferredFloor);
-    const recommendationPool = preferredOptions.length ? preferredOptions : wholeDollarOptions;
+    const preferredOptions = tipOptions.filter((option) => option.effectivePercentage >= preferredFloor);
+    const recommendationPool = preferredOptions.length ? preferredOptions : tipOptions;
     const bestOption = recommendationPool.reduce((best, option) => {
         const currentRate = option.requestedPercentage ?? option.effectivePercentage;
         const bestRate = best.requestedPercentage ?? best.effectivePercentage;
@@ -212,18 +206,15 @@ function buildTipOptions(bill) {
         const bestDistance = Math.abs(bestRate - targetTipPercentage);
         return currentDistance < bestDistance ? option : best;
     });
-    bestOptionIndex = wholeDollarOptions.findIndex((option) => option === bestOption);
+    bestOptionIndex = tipOptions.findIndex((option) => option === bestOption);
     selectedOptionIndex = bestOptionIndex;
-    document.querySelector('#optionCount').textContent = `${wholeDollarOptions.length} option${wholeDollarOptions.length === 1 ? '' : 's'}`;
+    document.querySelector('#optionCount').textContent = `${tipOptions.length} option${tipOptions.length === 1 ? '' : 's'}`;
     renderOptionWheel();
 }
 
 function renderSelectedOption() {
-    const option = wholeDollarOptions[selectedOptionIndex];
-    if (!option) {
-        renderSplit();
-        return;
-    }
+    const option = tipOptions[selectedOptionIndex];
+    if (!option) return;
     const isBest = selectedOptionIndex === bestOptionIndex;
     selectionAnnouncement.textContent = `${isBest ? 'Best fit selected. ' : 'Selected. '}${describeOption(option)}`;
     optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {
@@ -231,12 +222,12 @@ function renderSelectedOption() {
         item.classList.toggle('active', active);
         item.setAttribute('aria-selected', active ? 'true' : 'false');
     });
-    renderSplit();
 }
 
 function calculateTip() {
     buildTipOptions(billCents / 100);
     renderSelectedOption();
+    updatePeopleControl();
 }
 
 function handleBillInput() {
@@ -379,7 +370,6 @@ cameraInput.addEventListener('change', () => scanSelectedReceipt(cameraInput));
 uploadInput.addEventListener('change', () => scanSelectedReceipt(uploadInput));
 removePersonButton.addEventListener('click', () => changePeopleCount(-1));
 addPersonButton.addEventListener('click', () => changePeopleCount(1));
-targetRateInput.addEventListener('input', () => setTargetTip(targetRateInput.value));
 lowerTargetButton.addEventListener('click', () => setTargetTip(targetTipPercentage - 1));
 raiseTargetButton.addEventListener('click', () => setTargetTip(targetTipPercentage + 1));
 modeButtons.forEach((button) => button.addEventListener('click', () => setRoundingMode(button.dataset.mode)));

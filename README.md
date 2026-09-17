@@ -1,24 +1,24 @@
 # Tip of the Iceberg
 
-A fast, responsive tip calculator that adjusts the tip so the final bill rounds to the nearest whole dollar.
+A fast, responsive tip calculator that lets the user choose a clean total, a whole-dollar tip, or a precise percentage—and compare or split every option clearly.
 
 **Live app:** [sglashkari.github.io/tip](https://sglashkari.github.io/tip/)
 
 ## Features
 
-- Calculates the tip, rounded total, and effective tip rate as you type
+- Calculates the total, tip, and effective tip rate as you type
 - Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
-- Generates every whole-dollar total with an effective tip between 5% and 25%
+- Generates relevant options with an effective tip between 5% and 25%
 - Defaults to the option closest to a 16% effective tip while preferring rates of at least 14%, and provides a vertically scrolling, snap-to-option list for comparing alternatives
-- Switches among whole-dollar totals, whole-dollar tips, and whole-percent rates
-- Lets the user adjust and remember a preferred tip target from 5% to 25%
+- Switches among **Clean total**, **Clean tip**, and **Exact rate** calculation styles
+- Uses tap-friendly controls to adjust and remember a preferred tip target from 5% to 25%
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
 - Uses original, optimized hero artwork built around the dining-and-iceberg concept
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
-- Splits both the selected total and its tip among up to 20 people and accounts for every remainder cent
+- Shows total-per-person and tip-per-person directly in every comparison row when splitting among up to 20 people, including exact remainder-cent shares
 
 Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 
