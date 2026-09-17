@@ -1,4 +1,4 @@
-const CACHE='iceberg-tip-v12'; const ASSETS=['./','./index.html','./styles.css?v=12','./script.js?v=12','./calculator.png','./favicon.svg','./manifest.webmanifest'];
+const CACHE='iceberg-tip-v13'; const ASSETS=['./','./index.html','./styles.css?v=13','./script.js?v=12','./hero-iceberg-v2.webp','./favicon.svg','./manifest.webmanifest'];
 self.addEventListener('install',(event)=>{event.waitUntil(caches.open(CACHE).then((cache)=>cache.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',(event)=>{event.waitUntil(caches.keys().then((keys)=>Promise.all(keys.filter((key)=>key!==CACHE).map((key)=>caches.delete(key)))));self.clients.claim();});
 self.addEventListener('fetch',(event)=>{if(event.request.method!=='GET')return;event.respondWith(fetch(event.request).then((response)=>{const copy=response.clone();caches.open(CACHE).then((cache)=>cache.put(event.request,copy));return response;}).catch(()=>caches.match(event.request)));});

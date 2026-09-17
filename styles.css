@@ -5,7 +5,7 @@ body { min-height:100dvh; background:var(--ink); color:var(--ink); font-family:"
 button,input { font:inherit; }
 button { -webkit-tap-highlight-color:transparent; }
 .app-shell { min-height:100dvh; display:grid; grid-template-columns:minmax(320px,1.15fr) minmax(420px,.85fr); }
-.brand-panel { position:relative; min-height:100dvh; padding:clamp(2rem,5vw,5rem); display:flex; align-items:flex-end; background:linear-gradient(180deg,rgba(2,25,34,.03) 20%,rgba(2,25,34,.82)),url("calculator.png") center/cover; }
+.brand-panel { position:relative; min-height:100dvh; padding:clamp(2rem,5vw,5rem); display:flex; align-items:flex-end; background:linear-gradient(180deg,rgba(2,25,34,.04) 24%,rgba(2,25,34,.86)),url("hero-iceberg-v2.webp") center/cover; }
 .brand-copy { color:white; max-width:38rem; text-shadow:0 2px 20px rgba(0,0,0,.28); }
 .eyebrow { text-transform:uppercase; letter-spacing:.16em; font-size:.78rem; font-weight:700; }
 .brand-copy h1 { font:400 clamp(3.5rem,8vw,7.5rem)/.92 Pacifico,cursive; margin:.75rem 0 1.2rem; }
@@ -63,8 +63,8 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
 @media (max-width:760px) {
  body { background:var(--paper); overflow-x:hidden; }
  .app-shell { display:block; min-height:100dvh; }
- .brand-panel { position:fixed; inset:0 0 auto; height:34dvh; min-height:15rem; padding:0; background-position:center 55%; }
- .brand-panel::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(3,34,44,.08),rgba(3,34,44,.5)); }
+ .brand-panel { position:fixed; inset:0 0 auto; height:34dvh; min-height:15rem; padding:0; background-position:center 27%; }
+ .brand-panel::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(3,34,44,.02),rgba(3,34,44,.34)); }
  .brand-copy { display:none; }
  .calculator { position:relative; z-index:1; min-height:72dvh; margin-top:28dvh; padding:1rem 1rem max(1rem,env(safe-area-inset-bottom)); border-radius:1.6rem 1.6rem 0 0; justify-content:flex-start; box-shadow:0 -8px 30px rgba(4,35,44,.18); }
  .mobile-header { margin:0 0 1.35rem; }

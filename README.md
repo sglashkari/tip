@@ -12,6 +12,7 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 - Defaults to the option closest to a 16% effective tip while preferring rates of at least 14%, and provides a vertically scrolling, snap-to-option list for comparing alternatives
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
+- Uses original, optimized hero artwork built around the dining-and-iceberg concept
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
