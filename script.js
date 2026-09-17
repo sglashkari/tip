@@ -1,7 +1,7 @@
 const billInput = document.querySelector('#billAmount');
 const resetButton = document.querySelector('#resetButton');
-const recommendationButton = document.querySelector('#recommendation');
 const optionWheel = document.querySelector('#optionWheel');
+const selectionAnnouncement = document.querySelector('#selectionAnnouncement');
 const receiptInput = document.querySelector('#receiptInput');
 const scanStatus = document.querySelector('#scanStatus');
 const scanMessage = document.querySelector('#scanMessage');
@@ -36,11 +36,11 @@ function renderOptionWheel() {
     wholeDollarOptions.forEach((option, index) => {
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'fit-option';
+        button.className = `fit-option${index === bestOptionIndex ? ' best' : ''}`;
         button.dataset.index = index;
         button.setAttribute('role', 'option');
         button.setAttribute('aria-label', describeOption(option));
-        button.innerHTML = `<span class="option-total">${currency.format(option.total)}${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}</span><span class="option-tip">Tip ${currency.format(option.tip)}</span><span class="option-rate">${option.effectivePercentage.toFixed(2)}%</span>`;
+        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}<span class="option-metric"><span class="option-label">Total</span><strong>${currency.format(option.total)}</strong></span><span class="option-metric"><span class="option-label">Tip</span><strong>${currency.format(option.tip)}</strong></span><span class="option-metric"><span class="option-label">Effective</span><strong>${option.effectivePercentage.toFixed(2)}%</strong></span>`;
         button.addEventListener('click', () => selectOption(index));
         optionWheel.appendChild(button);
     });
@@ -63,11 +63,9 @@ function selectOption(index, center = true) {
 function buildTipOptions(bill) {
     wholeDollarOptions = makeWholeDollarOptions(bill);
     if (!wholeDollarOptions.length) {
-        recommendationButton.disabled = true;
-        document.querySelector('#bestFitSummary').textContent = bill > 0 ? 'No whole-dollar total falls between 5% and 25%' : 'Enter a bill to see options';
-        document.querySelector('#bestFitAction').textContent = 'Default';
         document.querySelector('#optionCount').textContent = 'No options yet';
         optionWheel.innerHTML = `<p class="wheel-empty">${bill > 0 ? 'No whole-dollar option falls within 5%–25%' : 'Enter a bill to see whole-dollar totals'}</p>`;
+        selectionAnnouncement.textContent = bill > 0 ? 'No whole-dollar option is available in the 5% to 25% range.' : '';
         return;
     }
 
@@ -77,30 +75,15 @@ function buildTipOptions(bill) {
         return currentDistance < bestDistance ? index : bestIndex;
     }, 0);
     selectedOptionIndex = bestOptionIndex;
-    recommendationButton.disabled = false;
-    document.querySelector('#bestFitSummary').textContent = describeOption(wholeDollarOptions[bestOptionIndex]);
-    document.querySelector('#bestFitAction').textContent = 'Default';
-    recommendationButton.setAttribute('aria-label', `Use best whole-dollar fit: ${describeOption(wholeDollarOptions[bestOptionIndex])}`);
     document.querySelector('#optionCount').textContent = `${wholeDollarOptions.length} option${wholeDollarOptions.length === 1 ? '' : 's'}`;
     renderOptionWheel();
 }
 
 function renderSelectedOption() {
-    const bill = billCents / 100;
     const option = wholeDollarOptions[selectedOptionIndex];
-    if (!option || bill <= 0) {
-        document.querySelector('#tipAmount').textContent = '$0.00';
-        document.querySelector('#totalAmount').textContent = '$0.00';
-        document.querySelector('#effectiveTip').textContent = '0.00%';
-        document.querySelector('#roundingNote').textContent = bill > 0 ? 'No whole-dollar option is available in the 5%–25% range.' : 'Enter a bill to see whole-dollar options.';
-        return;
-    }
+    if (!option) return;
     const isBest = selectedOptionIndex === bestOptionIndex;
-    document.querySelector('#tipAmount').textContent = currency.format(option.tip);
-    document.querySelector('#totalAmount').textContent = currency.format(option.total);
-    document.querySelector('#effectiveTip').textContent = `${option.effectivePercentage.toFixed(2)}%`;
-    document.querySelector('#bestFitAction').textContent = isBest ? 'Selected' : 'Use best';
-    document.querySelector('#roundingNote').textContent = isBest ? 'Recommended: closest whole-dollar option to a 15% tip.' : 'Alternative whole-dollar option selected.';
+    selectionAnnouncement.textContent = `${isBest ? 'Best fit selected. ' : 'Selected. '}${describeOption(option)}`;
     optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {
         const active = index === selectedOptionIndex;
         item.classList.toggle('active', active);
@@ -258,10 +241,6 @@ document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     billInput.value = (billCents / 100).toFixed(2);
     scanResult.hidden = true;
     calculateTip();
-});
-recommendationButton.addEventListener('click', () => {
-    if (!wholeDollarOptions.length) return;
-    selectOption(bestOptionIndex);
 });
 resetButton.addEventListener('click', () => {
     billCents = 0;

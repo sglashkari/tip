@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=10">
+    <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
     <main class="app-shell">
@@ -59,11 +59,6 @@
                 </div>
                 <fieldset class="tip-fieldset">
                     <legend>Choose a whole-dollar total</legend>
-                    <button class="recommendation" id="recommendation" type="button" disabled>
-                        <span class="best-badge">Best whole-dollar fit</span>
-                        <strong id="bestFitSummary">Enter a bill to see options</strong>
-                        <span class="best-action" id="bestFitAction">Default</span>
-                    </button>
                     <div class="fit-picker">
                         <div class="fit-picker-heading"><span>Scroll to compare</span><strong id="optionCount">No options yet</strong></div>
                         <div class="option-wheel" id="optionWheel" role="listbox" aria-label="Whole-dollar tip options" tabindex="0">
@@ -71,16 +66,12 @@
                         </div>
                         <div class="wheel-cue"><span>Lower tip</span><span aria-hidden="true">↕</span><span>Higher tip</span></div>
                     </div>
+                    <p class="visually-hidden" id="selectionAnnouncement" aria-live="polite"></p>
                 </fieldset>
-                <div class="result-card" aria-live="polite">
-                    <div class="result-primary"><span>Total</span><strong id="totalAmount">$0.00</strong></div>
-                    <div class="result-details"><p><span>Tip</span><strong id="tipAmount">$0.00</strong></p><p><span>Effective tip</span><strong id="effectiveTip">0.00%</strong></p></div>
-                    <p class="rounding-note" id="roundingNote">Enter a bill to see the rounded total.</p>
-                </div>
             </div>
             <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=11"></script>
 </body>
 </html>
