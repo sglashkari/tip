@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
     <main class="app-shell">
@@ -58,18 +58,17 @@
                     </div>
                 </div>
                 <fieldset class="tip-fieldset">
-                    <legend>Tip</legend>
-                    <div class="tip-row" role="group" aria-label="Choose a tip percentage">
-                        <button class="tip-chip" type="button" data-tip="10" aria-label="10 percent for not-so-good service">10%</button>
-                        <button class="tip-chip" type="button" data-tip="15">15%</button>
-                        <button class="tip-chip active" type="button" data-tip="18">18%</button>
-                        <button class="tip-chip" type="button" data-tip="20">20%</button>
-                        <label class="custom-tip" aria-label="Custom tip percentage"><input type="number" id="tipPercentage" name="tipPercentage" inputmode="decimal" min="0" step="1" value="18"><span>%</span></label>
-                    </div>
+                    <legend>Choose a whole-dollar total</legend>
                     <button class="recommendation" id="recommendation" type="button" disabled>
-                        <span>Best whole-dollar fit</span>
-                        <strong>Enter a bill to see</strong>
+                        <span class="best-badge">Best whole-dollar fit</span>
+                        <strong id="bestFitSummary">Enter a bill to see options</strong>
+                        <span class="best-action" id="bestFitAction">Default</span>
                     </button>
+                    <div class="fit-picker">
+                        <div class="fit-picker-heading"><span id="selectionLabel">Selected option</span><strong id="selectedFit">—</strong></div>
+                        <input type="range" id="tipSlider" min="0" max="0" step="1" value="0" disabled aria-label="Choose among whole-dollar tip options">
+                        <div class="fit-range-labels"><span id="lowestFit">5% minimum</span><span>Slide to compare</span><span id="highestFit">25% maximum</span></div>
+                    </div>
                 </fieldset>
                 <div class="result-card" aria-live="polite">
                     <div class="result-primary"><span>Total</span><strong id="totalAmount">$0.00</strong></div>
@@ -80,6 +79,6 @@
             <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=9"></script>
 </body>
 </html>

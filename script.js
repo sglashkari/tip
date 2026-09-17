@@ -1,8 +1,7 @@
 const billInput = document.querySelector('#billAmount');
-const tipInput = document.querySelector('#tipPercentage');
-const tipButtons = document.querySelectorAll('[data-tip]');
 const resetButton = document.querySelector('#resetButton');
 const recommendationButton = document.querySelector('#recommendation');
+const tipSlider = document.querySelector('#tipSlider');
 const receiptInput = document.querySelector('#receiptInput');
 const scanStatus = document.querySelector('#scanStatus');
 const scanMessage = document.querySelector('#scanMessage');
@@ -12,67 +11,83 @@ const detectedTotalInput = document.querySelector('#detectedTotal');
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
 let billCents = 0;
-let recommendedPercentage = 18;
-let tipOverridden = false;
+let wholeDollarOptions = [];
+let bestOptionIndex = 0;
+let selectedOptionIndex = 0;
 
-function setActiveTip(value) {
-    tipButtons.forEach((button) => button.classList.toggle('active', Number(button.dataset.tip) === Number(value)));
-}
-
-function findBestWholeDollarTip(bill) {
-    const choices = [];
-    for (let percentage = 14; percentage <= 20; percentage += 1) {
-        const rawTotal = bill * (1 + percentage / 100);
-        choices.push({
-            percentage,
-            roundedTotal: Math.round(rawTotal),
-            adjustment: Math.abs(Math.round(rawTotal) - rawTotal)
-        });
+function makeWholeDollarOptions(bill) {
+    if (bill <= 0) return [];
+    const minimumTotal = Math.ceil(bill * 1.05 - .000001);
+    const maximumTotal = Math.floor(bill * 1.25 + .000001);
+    const options = [];
+    for (let total = minimumTotal; total <= maximumTotal; total += 1) {
+        const tip = total - bill;
+        options.push({ total, tip, effectivePercentage: tip / bill * 100 });
     }
-    choices.sort((a, b) => a.adjustment - b.adjustment || Math.abs(a.percentage - 18) - Math.abs(b.percentage - 18));
-    return choices[0];
+    return options;
 }
 
-function updateRecommendation(bill) {
-    const label = recommendationButton.querySelector('strong');
-    if (bill <= 0) {
+function describeOption(option) {
+    return `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}%`;
+}
+
+function buildTipOptions(bill) {
+    wholeDollarOptions = makeWholeDollarOptions(bill);
+    if (!wholeDollarOptions.length) {
         recommendationButton.disabled = true;
-        label.textContent = 'Enter a bill to see';
+        document.querySelector('#bestFitSummary').textContent = bill > 0 ? 'No whole-dollar total falls between 5% and 25%' : 'Enter a bill to see options';
+        document.querySelector('#bestFitAction').textContent = 'Default';
+        document.querySelector('#selectedFit').textContent = '—';
+        document.querySelector('#lowestFit').textContent = '5% minimum';
+        document.querySelector('#highestFit').textContent = '25% maximum';
+        tipSlider.disabled = true;
+        tipSlider.min = 0;
+        tipSlider.max = 0;
+        tipSlider.value = 0;
         return;
     }
-    const best = findBestWholeDollarTip(bill);
-    recommendedPercentage = best.percentage;
-    if (!tipOverridden) {
-        tipInput.value = best.percentage;
-        setActiveTip(best.percentage);
-    }
+
+    bestOptionIndex = wholeDollarOptions.reduce((bestIndex, option, index) => {
+        const currentDistance = Math.abs(option.effectivePercentage - 15);
+        const bestDistance = Math.abs(wholeDollarOptions[bestIndex].effectivePercentage - 15);
+        return currentDistance < bestDistance ? index : bestIndex;
+    }, 0);
+    selectedOptionIndex = bestOptionIndex;
     recommendationButton.disabled = false;
-    label.textContent = `${best.percentage}% → ${currency.format(best.roundedTotal)}${tipOverridden ? '' : ' · Default'}`;
-    recommendationButton.setAttribute('aria-label', `Use recommended ${best.percentage} percent tip for a ${currency.format(best.roundedTotal)} total`);
+    document.querySelector('#bestFitSummary').textContent = describeOption(wholeDollarOptions[bestOptionIndex]);
+    document.querySelector('#bestFitAction').textContent = 'Default';
+    recommendationButton.setAttribute('aria-label', `Use best whole-dollar fit: ${describeOption(wholeDollarOptions[bestOptionIndex])}`);
+    tipSlider.disabled = wholeDollarOptions.length === 1;
+    tipSlider.min = 0;
+    tipSlider.max = wholeDollarOptions.length - 1;
+    tipSlider.value = bestOptionIndex;
+    document.querySelector('#lowestFit').textContent = `${wholeDollarOptions[0].effectivePercentage.toFixed(2)}%`;
+    document.querySelector('#highestFit').textContent = `${wholeDollarOptions.at(-1).effectivePercentage.toFixed(2)}%`;
 }
 
-function calculateTip() {
+function renderSelectedOption() {
     const bill = billCents / 100;
-    updateRecommendation(bill);
-    const percentage = Number.parseFloat(tipInput.value);
-    const safePercentage = Number.isFinite(percentage) && percentage >= 0 ? percentage : 0;
-
-    if (bill <= 0) {
+    const option = wholeDollarOptions[selectedOptionIndex];
+    if (!option || bill <= 0) {
         document.querySelector('#tipAmount').textContent = '$0.00';
         document.querySelector('#totalAmount').textContent = '$0.00';
         document.querySelector('#effectiveTip').textContent = '0.00%';
-        document.querySelector('#roundingNote').textContent = 'Enter a bill to see the rounded total.';
+        document.querySelector('#roundingNote').textContent = bill > 0 ? 'No whole-dollar option is available in the 5%–25% range.' : 'Enter a bill to see whole-dollar options.';
         return;
     }
+    const isBest = selectedOptionIndex === bestOptionIndex;
+    document.querySelector('#tipAmount').textContent = currency.format(option.tip);
+    document.querySelector('#totalAmount').textContent = currency.format(option.total);
+    document.querySelector('#effectiveTip').textContent = `${option.effectivePercentage.toFixed(2)}%`;
+    document.querySelector('#selectedFit').textContent = `${currency.format(option.tip)} · ${option.effectivePercentage.toFixed(2)}%`;
+    document.querySelector('#selectionLabel').textContent = isBest ? 'Best fit selected' : `Option ${selectedOptionIndex + 1} of ${wholeDollarOptions.length}`;
+    document.querySelector('#bestFitAction').textContent = isBest ? 'Selected' : 'Use best';
+    document.querySelector('#roundingNote').textContent = isBest ? 'Recommended: closest whole-dollar option to a 15% tip.' : 'Alternative whole-dollar option selected.';
+}
 
-    const rawTotal = bill * (1 + safePercentage / 100);
-    const roundedTotal = Math.round(rawTotal);
-    const tip = roundedTotal - bill;
-    const effectivePercentage = tip / bill * 100;
-    document.querySelector('#tipAmount').textContent = currency.format(tip);
-    document.querySelector('#totalAmount').textContent = currency.format(roundedTotal);
-    document.querySelector('#effectiveTip').textContent = `${effectivePercentage.toFixed(2)}%`;
-    document.querySelector('#roundingNote').textContent = `${safePercentage}% selected; ${currency.format(rawTotal)} rounds to ${currency.format(roundedTotal)}.`;
+function calculateTip() {
+    buildTipOptions(billCents / 100);
+    renderSelectedOption();
 }
 
 function handleBillInput() {
@@ -84,7 +99,6 @@ function handleBillInput() {
         billCents = Number.parseInt(digits, 10);
         billInput.value = (billCents / 100).toFixed(2);
     }
-    tipOverridden = false;
     billInput.setSelectionRange(billInput.value.length, billInput.value.length);
     calculateTip();
 }
@@ -185,15 +199,11 @@ async function scanReceipt(file) {
     }
 }
 
-tipButtons.forEach((button) => button.addEventListener('click', () => {
-    tipOverridden = true;
-    tipInput.value = button.dataset.tip;
-    setActiveTip(button.dataset.tip);
-    calculateTip();
-}));
-
-tipInput.addEventListener('input', () => { tipOverridden = true; setActiveTip(tipInput.value); calculateTip(); });
 billInput.addEventListener('input', handleBillInput);
+tipSlider.addEventListener('input', () => {
+    selectedOptionIndex = Number.parseInt(tipSlider.value, 10);
+    renderSelectedOption();
+});
 receiptInput.addEventListener('change', () => {
     const file = receiptInput.files?.[0];
     if (file) scanReceipt(file);
@@ -207,24 +217,20 @@ document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     }
     billCents = Math.round(detected * 100);
     billInput.value = (billCents / 100).toFixed(2);
-    tipOverridden = false;
     scanResult.hidden = true;
     calculateTip();
 });
 recommendationButton.addEventListener('click', () => {
-    tipOverridden = false;
-    tipInput.value = recommendedPercentage;
-    setActiveTip(recommendedPercentage);
-    calculateTip();
+    if (!wholeDollarOptions.length) return;
+    selectedOptionIndex = bestOptionIndex;
+    tipSlider.value = bestOptionIndex;
+    renderSelectedOption();
 });
 resetButton.addEventListener('click', () => {
     billCents = 0;
-    tipOverridden = false;
     billInput.value = '';
     scanStatus.hidden = true;
     scanResult.hidden = true;
-    tipInput.value = '18';
-    setActiveTip(18);
     calculateTip();
     billInput.focus();
 });
