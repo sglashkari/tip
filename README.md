@@ -7,7 +7,9 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 ## Features
 
 - Calculates the tip, rounded total, and effective tip rate as you type
-- Includes one-tap presets for 15%, 18%, 20%, and 25%, plus a custom rate
+- Includes one-tap presets for 10%, 15%, 18%, and 20%, plus a custom rate
+- Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
+- Recommends the integer rate from 14%–20% that comes closest to a whole-dollar total
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
 - Can be installed as a standalone Progressive Web App (PWA)

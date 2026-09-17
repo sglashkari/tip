@@ -34,17 +34,22 @@
             <div class="form-area">
                 <div class="field-group">
                     <label for="billAmount">Bill amount</label>
-                    <div class="money-input"><span aria-hidden="true">$</span><input type="number" id="billAmount" name="billAmount" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off" autofocus></div>
+                    <div class="money-input"><span aria-hidden="true">$</span><input type="text" id="billAmount" name="billAmount" inputmode="numeric" pattern="[0-9]*" placeholder="0.00" autocomplete="off" aria-describedby="billHint" autofocus></div>
+                    <p class="input-hint" id="billHint">Just type the digits — 1234 becomes $12.34</p>
                 </div>
                 <fieldset class="tip-fieldset">
                     <legend>Tip</legend>
                     <div class="tip-row" role="group" aria-label="Choose a tip percentage">
+                        <button class="tip-chip" type="button" data-tip="10" aria-label="10 percent for not-so-good service">10%</button>
                         <button class="tip-chip" type="button" data-tip="15">15%</button>
                         <button class="tip-chip active" type="button" data-tip="18">18%</button>
                         <button class="tip-chip" type="button" data-tip="20">20%</button>
-                        <button class="tip-chip" type="button" data-tip="25">25%</button>
                         <label class="custom-tip" aria-label="Custom tip percentage"><input type="number" id="tipPercentage" name="tipPercentage" inputmode="decimal" min="0" step="1" value="18"><span>%</span></label>
                     </div>
+                    <button class="recommendation" id="recommendation" type="button" disabled>
+                        <span>Best whole-dollar fit</span>
+                        <strong>Enter a bill to see</strong>
+                    </button>
                 </fieldset>
                 <div class="result-card" aria-live="polite">
                     <div class="result-primary"><span>Total</span><strong id="totalAmount">$0.00</strong></div>
