@@ -18,7 +18,7 @@ A fast, responsive tip calculator that lets the user choose a clean total, a who
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
-- Shows total-per-person and tip-per-person directly in every comparison row when splitting among up to 20 people, including exact remainder-cent shares
+- Shows bill, tip, and total per person directly in every comparison row when splitting among up to 20 people, including exact remainder-cent shares
 
 Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 

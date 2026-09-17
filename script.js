@@ -99,15 +99,17 @@ function describeOption(option) {
     const base = `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}% effective rate`;
     if (peopleCount === 1) return base;
     const split = splitOption(option);
-    return `${base} · split ${peopleCount} ways: ${currency.format(split.totalEachCents / 100)} total each and ${currency.format(split.tipEachCents / 100)} tip each`;
+    return `${base} · split ${peopleCount} ways: ${currency.format(split.billEachCents / 100)} bill, ${currency.format(split.tipEachCents / 100)} tip, and ${currency.format(split.totalEachCents / 100)} total per person`;
 }
 
 function splitOption(option) {
     const totalCents = Math.round(option.total * 100);
     const tipCents = Math.round(option.tip * 100);
     return {
+        billEachCents: Math.floor(billCents / peopleCount),
         totalEachCents: Math.floor(totalCents / peopleCount),
         tipEachCents: Math.floor(tipCents / peopleCount),
+        extraBillShares: billCents % peopleCount,
         extraTotalShares: totalCents % peopleCount,
         extraTipShares: tipCents % peopleCount
     };
@@ -115,6 +117,7 @@ function splitOption(option) {
 
 function splitNote(split) {
     const notes = [];
+    if (split.extraBillShares) notes.push(`${split.extraBillShares} ${split.extraBillShares === 1 ? 'has' : 'have'} ${currency.format((split.billEachCents + 1) / 100)} bill`);
     if (split.extraTotalShares) notes.push(`${split.extraTotalShares} ${split.extraTotalShares === 1 ? 'pays' : 'pay'} ${currency.format((split.totalEachCents + 1) / 100)} total`);
     if (split.extraTipShares) notes.push(`${split.extraTipShares} ${split.extraTipShares === 1 ? 'tips' : 'tip'} ${currency.format((split.tipEachCents + 1) / 100)}`);
     return notes.length ? notes.join(' · ') : `${peopleCount} equal shares`;
@@ -125,7 +128,7 @@ function renderOptionWheel() {
     tipOptions.forEach((option, index) => {
         const split = splitOption(option);
         const personDetails = peopleCount > 1
-            ? `<span class="option-person"><span>Per person</span><span>Total <strong>${currency.format(split.totalEachCents / 100)}</strong></span><span>Tip <strong>${currency.format(split.tipEachCents / 100)}</strong></span></span><span class="option-split-note">${splitNote(split)}</span>`
+            ? `<span class="option-person"><span>Per person</span><span>Bill <strong>${currency.format(split.billEachCents / 100)}</strong></span><span>Tip <strong>${currency.format(split.tipEachCents / 100)}</strong></span><span>Total <strong>${currency.format(split.totalEachCents / 100)}</strong></span></span><span class="option-split-note">${splitNote(split)}</span>`
             : '';
         const button = document.createElement('button');
         button.type = 'button';
