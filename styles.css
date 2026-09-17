@@ -25,7 +25,9 @@ button { -webkit-tap-highlight-color:transparent; }
 .money-input:focus-within { border-color:#e36f51; }
 .bill-tools { min-height:2.8rem; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem; margin:.55rem 0 1rem; }
 .input-hint { margin:.35rem 0 0; color:var(--muted); font-size:.76rem; }
+.receipt-actions { flex:0 0 auto; display:flex; gap:.45rem; }
 .scan-button { flex:0 0 auto; display:flex; align-items:center; gap:.4rem; padding:.55rem .7rem; border:1px solid var(--line); border-radius:.7rem; background:white; color:var(--ink); font-size:.78rem; font-weight:700; cursor:pointer; }
+.scan-button svg { width:1rem; height:1rem; fill:currentColor; }
 .scan-button:active { transform:scale(.97); }
 .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .scan-status,.scan-result { margin:0 0 1rem; padding:.85rem; border:1px solid var(--line); border-radius:.85rem; background:white; }
@@ -56,8 +58,6 @@ button { -webkit-tap-highlight-color:transparent; }
 .fit-option.active .option-metric strong { color:#075d64; }
 .fit-option:focus-visible { outline:2px solid var(--coral); outline-offset:2px; }
 .wheel-empty { margin:1rem; color:var(--muted); font-size:.8rem; text-align:center; }
-.wheel-cue { display:flex; align-items:center; justify-content:space-between; padding:.1rem .25rem 0; color:var(--muted); font-size:.65rem; }
-.wheel-cue span:nth-child(2) { color:#168891; font-size:.9rem; }
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button { appearance:none; margin:0; }
 footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem; color:var(--muted); font-size:.72rem; }
 @media (max-width:760px) {
@@ -76,4 +76,5 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
  footer { margin-top:1.25rem; padding-bottom:env(safe-area-inset-bottom); }
  footer span:first-child { display:none; }
 }
+@media (max-width:460px) { .bill-tools{align-items:stretch;flex-direction:column}.input-hint{margin-top:0}.receipt-actions{display:grid;grid-template-columns:1fr 1fr}.scan-button{justify-content:center} }
 @media (max-width:370px) { .calculator{padding-inline:.75rem}.mobile-header h2{font-size:1.05rem}.option-wheel{height:13.25rem}.fit-option{padding-inline:.3rem}.option-metric strong{font-size:.9rem} }

@@ -2,7 +2,8 @@ const billInput = document.querySelector('#billAmount');
 const resetButton = document.querySelector('#resetButton');
 const optionWheel = document.querySelector('#optionWheel');
 const selectionAnnouncement = document.querySelector('#selectionAnnouncement');
-const receiptInput = document.querySelector('#receiptInput');
+const cameraInput = document.querySelector('#cameraInput');
+const uploadInput = document.querySelector('#uploadInput');
 const scanStatus = document.querySelector('#scanStatus');
 const scanMessage = document.querySelector('#scanMessage');
 const scanProgress = document.querySelector('#scanProgress');
@@ -69,11 +70,14 @@ function buildTipOptions(bill) {
         return;
     }
 
-    bestOptionIndex = wholeDollarOptions.reduce((bestIndex, option, index) => {
-        const currentDistance = Math.abs(option.effectivePercentage - 15);
-        const bestDistance = Math.abs(wholeDollarOptions[bestIndex].effectivePercentage - 15);
-        return currentDistance < bestDistance ? index : bestIndex;
-    }, 0);
+    const preferredOptions = wholeDollarOptions.filter((option) => option.effectivePercentage >= 14);
+    const recommendationPool = preferredOptions.length ? preferredOptions : wholeDollarOptions;
+    const bestOption = recommendationPool.reduce((best, option) => {
+        const currentDistance = Math.abs(option.effectivePercentage - 16);
+        const bestDistance = Math.abs(best.effectivePercentage - 16);
+        return currentDistance < bestDistance ? option : best;
+    });
+    bestOptionIndex = wholeDollarOptions.findIndex((option) => option === bestOption);
     selectedOptionIndex = bestOptionIndex;
     document.querySelector('#optionCount').textContent = `${wholeDollarOptions.length} option${wholeDollarOptions.length === 1 ? '' : 's'}`;
     renderOptionWheel();
@@ -201,7 +205,8 @@ async function scanReceipt(file) {
         scanMessage.textContent = error.message || 'The receipt could not be read. Please enter the amount manually.';
     } finally {
         if (worker) await worker.terminate();
-        receiptInput.value = '';
+        cameraInput.value = '';
+        uploadInput.value = '';
     }
 }
 
@@ -226,10 +231,13 @@ optionWheel.addEventListener('keydown', (event) => {
     event.preventDefault();
     selectOption(selectedOptionIndex + (event.key === 'ArrowDown' ? 1 : -1));
 });
-receiptInput.addEventListener('change', () => {
-    const file = receiptInput.files?.[0];
+function scanSelectedReceipt(input) {
+    const file = input.files?.[0];
     if (file) scanReceipt(file);
-});
+}
+
+cameraInput.addEventListener('change', () => scanSelectedReceipt(cameraInput));
+uploadInput.addEventListener('change', () => scanSelectedReceipt(uploadInput));
 document.querySelector('#cancelScan').addEventListener('click', () => { scanResult.hidden = true; billInput.focus(); });
 document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     const detected = Number.parseFloat(detectedTotalInput.value);
