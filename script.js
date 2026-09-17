@@ -84,6 +84,7 @@ function handleBillInput() {
         billCents = Number.parseInt(digits, 10);
         billInput.value = (billCents / 100).toFixed(2);
     }
+    tipOverridden = false;
     billInput.setSelectionRange(billInput.value.length, billInput.value.length);
     calculateTip();
 }
@@ -101,24 +102,33 @@ function loadReceiptScanner() {
 }
 
 async function prepareReceiptImage(file) {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1800 / bitmap.width);
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    const context = canvas.getContext('2d', { willReadFrequently: true });
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    const image = context.getImageData(0, 0, canvas.width, canvas.height);
-    for (let index = 0; index < image.data.length; index += 4) {
-        const gray = image.data[index] * .299 + image.data[index + 1] * .587 + image.data[index + 2] * .114;
-        const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
-        image.data[index] = contrasted;
-        image.data[index + 1] = contrasted;
-        image.data[index + 2] = contrasted;
+    const imageUrl = URL.createObjectURL(file);
+    const sourceImage = new Image();
+    try {
+        await new Promise((resolve, reject) => {
+            sourceImage.onload = resolve;
+            sourceImage.onerror = () => reject(new Error('This photo format could not be opened. Try choosing a screenshot or JPEG photo.'));
+            sourceImage.src = imageUrl;
+        });
+        const scale = Math.min(1, 1800 / sourceImage.naturalWidth);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(sourceImage.naturalWidth * scale);
+        canvas.height = Math.round(sourceImage.naturalHeight * scale);
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+        const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+        for (let index = 0; index < pixels.data.length; index += 4) {
+            const gray = pixels.data[index] * .299 + pixels.data[index + 1] * .587 + pixels.data[index + 2] * .114;
+            const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+            pixels.data[index] = contrasted;
+            pixels.data[index + 1] = contrasted;
+            pixels.data[index + 2] = contrasted;
+        }
+        context.putImageData(pixels, 0, 0);
+        return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The receipt photo could not be prepared.')), 'image/jpeg', .9));
+    } finally {
+        URL.revokeObjectURL(imageUrl);
     }
-    context.putImageData(image, 0, 0);
-    return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', .9));
 }
 
 function extractReceiptTotal(text) {
