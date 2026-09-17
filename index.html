@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=23">
+    <link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
     <main class="app-shell">
@@ -28,26 +28,25 @@
         <section class="calculator" aria-labelledby="calculator-title">
             <header class="mobile-header">
                 <span class="mini-mark" aria-hidden="true">▲</span>
-                <div><p class="mobile-kicker">Tip calculator</p><h2 id="calculator-title">Tip of the Iceberg</h2></div>
+                <div><h2 id="calculator-title">Tip of the Iceberg</h2></div>
                 <button class="reset" id="resetButton" type="button" aria-label="Reset calculator">Reset</button>
             </header>
             <div class="form-area">
                 <div class="field-group">
                     <label for="billAmount">Bill amount</label>
                     <div class="amount-row">
-                        <div class="money-input"><span aria-hidden="true">$</span><input type="text" id="billAmount" name="billAmount" inputmode="numeric" pattern="[0-9]*" placeholder="0.00" autocomplete="off" aria-describedby="billHint" maxlength="18" autofocus></div>
+                        <div class="money-input"><span aria-hidden="true">$</span><input type="text" id="billAmount" name="billAmount" inputmode="numeric" pattern="[0-9]*" placeholder="0.00" autocomplete="off" maxlength="18" autofocus></div>
                         <div class="receipt-actions">
                             <button class="scan-button" id="cameraButton" type="button" title="Take photo" aria-label="Take a receipt photo">
                                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 4 7.5 6H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-2.5L15 4H9Zm3 13.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Zm0-2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
                                 <span class="visually-hidden">Take photo</span>
                             </button>
-                            <button class="scan-button" id="uploadButton" type="button" title="Upload receipt" aria-label="Upload a receipt image">
-                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M11 16V7.8L8.4 10.4 7 9l5-5 5 5-1.4 1.4L13 7.8V16h-2Zm-5 4a2 2 0 0 1-2-2v-3h2v3h12v-3h2v3a2 2 0 0 1-2 2H6Z"/></svg>
-                                <span class="visually-hidden">Upload receipt</span>
+                            <button class="scan-button" id="uploadButton" type="button" title="Choose receipt photo" aria-label="Choose a receipt photo">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5"/><path d="m4 18 5-5 3 3 4-6 5 7"/></svg>
+                                <span class="visually-hidden">Choose photo</span>
                             </button>
                         </div>
                     </div>
-                    <p class="input-hint" id="billHint">Type the digits — 1234 becomes $12.34</p>
                     <input class="visually-hidden" type="file" id="cameraInput" accept="image/*" capture="environment">
                     <input class="visually-hidden" type="file" id="uploadInput" accept="image/*">
                     <div class="scan-status" id="scanStatus" role="status" aria-live="polite" hidden>
@@ -78,24 +77,24 @@
                         <div class="setup-control">
                             <label id="peopleLabel">People</label>
                             <div class="compact-stepper" role="group" aria-labelledby="peopleLabel">
-                                <button type="button" id="removePerson" aria-label="Remove one person" disabled>−</button>
+                                <button type="button" id="removePerson" aria-label="Remove one person" disabled><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="7" r="3"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M16 10h6"/></svg></button>
                                 <output id="peopleCount" aria-live="polite">1</output>
-                                <button type="button" id="addPerson" aria-label="Add one person">+</button>
+                                <button type="button" id="addPerson" aria-label="Add one person"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="7" r="3"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M16 10h6M19 7v6"/></svg></button>
                             </div>
                         </div>
                     </div>
                     <fieldset class="rounding-mode">
-                        <legend>Finish with</legend>
+                        <legend>Round to</legend>
                         <div class="mode-tabs">
-                            <button type="button" class="mode-tab active" data-family="total" data-mode="total" aria-pressed="true">Clean total</button>
-                            <button type="button" class="mode-tab" data-family="tip" data-mode="tip" aria-pressed="false">Clean tip</button>
-                            <button type="button" class="mode-tab" data-mode="rate" aria-pressed="false">Exact rate</button>
+                            <button type="button" class="mode-tab active" data-family="total" data-mode="total" aria-pressed="true">Total</button>
+                            <button type="button" class="mode-tab" data-family="tip" data-mode="tip" aria-pressed="false">Tip</button>
+                            <button type="button" class="mode-tab" data-mode="rate" aria-pressed="false">Percent</button>
                         </div>
                         <p class="visually-hidden" id="modeHelp">Ends the check on a whole dollar.</p>
                     </fieldset>
                 </section>
                 <fieldset class="tip-fieldset">
-                    <legend id="optionLegend">Choose your tip</legend>
+                    <legend class="visually-hidden" id="optionLegend">Choose your tip</legend>
                     <div class="fit-picker">
                         <div class="fit-picker-heading"><span>Scroll to compare</span><strong id="optionCount">No options yet</strong></div>
                         <div class="option-wheel" id="optionWheel" role="listbox" aria-label="Tip options" tabindex="0">
@@ -108,6 +107,6 @@
             <footer><span>Receipt scans stay on this device</span><span>No account needed</span></footer>
         </section>
     </main>
-    <script src="script.js?v=23"></script>
+    <script src="script.js?v=24"></script>
 </body>
 </html>

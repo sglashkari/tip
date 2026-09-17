@@ -13,7 +13,6 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .calculator { min-height:100dvh; padding:clamp(2rem,5vw,5rem); background:var(--paper); display:flex; flex-direction:column; justify-content:center; }
 .mobile-header { display:flex; align-items:center; gap:.75rem; margin-bottom:2.5rem; }
 .mini-mark { width:2.75rem; height:2.75rem; display:grid; place-items:center; border-radius:50%; background:var(--ink); color:var(--aqua); transform:rotate(180deg); }
-.mobile-kicker { margin:0 0 .1rem; color:var(--muted); font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; }
 .mobile-header h2 { margin:0; font-size:1.2rem; }
 .reset { min-height:2.75rem; margin-left:auto; border:0; border-radius:.7rem; background:transparent; color:var(--ink-soft); font-weight:700; padding:.65rem .75rem; cursor:pointer; }
 .reset:active { background:rgba(7,45,58,.06); }
@@ -21,11 +20,10 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .field-group label,.tip-fieldset legend { display:block; margin-bottom:.65rem; color:var(--ink-soft); font-weight:700; font-size:.92rem; }
 .money-input { min-width:0; display:flex; align-items:center; gap:.35rem; border-bottom:2px solid var(--ink); }
 .money-input span { font-size:2rem; font-weight:600; }
-.money-input input { min-width:0; width:100%; border:0; outline:0; background:transparent; color:var(--ink); font-size:clamp(3rem,7vw,5.2rem); font-weight:700; line-height:1.15; }
+.money-input input { min-width:0; width:100%; border:0; outline:0; background:transparent; color:var(--ink); font-size:clamp(2rem,4.5vw,3rem); font-weight:700; line-height:1.15; }
 .money-input input::placeholder { color:#b8c8ca; }
 .money-input:focus-within { border-color:#e36f51; }
 .amount-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:.65rem; }
-.input-hint { margin:.4rem 0 .8rem; color:var(--muted); font-size:.72rem; }
 .receipt-actions { display:flex; gap:.4rem; padding-bottom:.2rem; }
 .scan-button { width:2.75rem; height:2.75rem; padding:0; display:grid; place-items:center; border:1px solid var(--line); border-radius:.75rem; background:white; color:var(--ink); cursor:pointer; box-shadow:0 3px 10px rgba(7,45,58,.06); transition:transform .14s ease,background .14s ease,box-shadow .14s ease; }
 .scan-button svg { width:1.15rem; height:1.15rem; fill:currentColor; }
@@ -88,7 +86,7 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
  .mobile-header { margin:0 0 .75rem; }
  .mini-mark { width:2.5rem; height:2.5rem; }
  .form-area { width:100%; }
- .money-input input { font-size:clamp(2.65rem,14vw,3.75rem); }
+ .money-input input { font-size:clamp(2rem,9vw,2.6rem); }
  .tip-setup { margin-bottom:.65rem; padding-block:.65rem; }
  .setup-heading { margin-bottom:.5rem; }
  .setup-control { padding:.5rem; }
@@ -114,8 +112,29 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
 .setup-control output { font-size:1.35rem; text-align:center; color:var(--ink); }
 .rounding-mode legend { font-size:.85rem; color:var(--ink-soft); }
 .mode-tab { font-size:.85rem; min-height:3rem; padding:.5rem .25rem; }
-.option-group { grid-column:1/-1; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.3rem; padding:.5rem .2rem; border-radius:.6rem; background:#eff8f9; font-size:.7rem; color:var(--muted); }
-.option-group>span { display:flex; flex-direction:column; gap:.15rem; min-width:0; }
-.option-group strong { font-size:.85rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 .option-metric strong { font-size:clamp(1.1rem,4.4vw,1.35rem); }
 @media (max-width:370px) { .mode-tab { font-size:.78rem; } }
+
+/* Compact header, input and rounding controls. */
+.mobile-header { gap:.6rem; margin-bottom:1.1rem; }
+.mobile-header>div { min-width:0; }
+.mobile-header h2 { font-size:1.1rem; line-height:1.2; }
+.mini-mark { flex:0 0 2rem; width:2rem; height:2rem; }
+.reset { padding-inline:.5rem; font-size:.85rem; }
+.money-input span { font-size:1.5rem; }
+.amount-row { align-items:center; margin-bottom:1rem; }
+.compact-stepper svg { display:block; width:1.4rem; height:1.4rem; margin:auto; }
+#uploadButton svg { fill:none; }
+.rounding-mode { margin-top:.85rem; padding-top:.4rem; border:0; }
+.rounding-mode legend { font-size:.8rem; }
+.mode-tabs { gap:.2rem; padding:.25rem; background:#edf3f4; border-radius:.8rem; }
+.mode-tab { min-height:2.75rem; background:transparent; border:0; font-size:.85rem; }
+.mode-tab.active { background:white; box-shadow:0 2px 8px rgba(7,45,58,.1); }
+.option-rate { grid-column:1/-1; margin-top:.3rem; color:var(--muted); font-size:.8rem; }
+.option-rate strong { margin-left:.3rem; color:#075d64; font-size:.95rem; font-variant-numeric:tabular-nums; }
+@media (max-width:760px) {
+ .brand-panel { height:15dvh; min-height:6rem; }
+ .calculator { margin-top:12dvh; min-height:88dvh; }
+ .mobile-header { margin-bottom:.85rem; }
+ .mini-mark { width:2rem; height:2rem; }
+}

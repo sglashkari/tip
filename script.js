@@ -158,7 +158,7 @@ function renderOptionWheel() {
                 + metric('Tip', currency.format(option.tip))
                 + metric('Effective', option.effectivePercentage.toFixed(2) + '%');
         const groupDetails = peopleCount > 1
-            ? `<span class="option-group"><span>Group total <strong>${currency.format(option.total)}</strong></span><span>Group tip <strong>${currency.format(option.tip)}</strong></span><span>Rate <strong>${option.effectivePercentage.toFixed(2)}%</strong></span></span>${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
+            ? `<span class="option-rate">Effective tip <strong>${option.effectivePercentage.toFixed(2)}%</strong></span>${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
             : '';
         const button = document.createElement('button');
         button.type = 'button';
@@ -196,9 +196,11 @@ function updatePeopleControl() {
     const totalModeButton = modeButtons.find((button) => button.dataset.family === 'total');
     const tipModeButton = modeButtons.find((button) => button.dataset.family === 'tip');
     totalModeButton.dataset.mode = peopleCount > 1 ? 'splitTotal' : 'total';
-    totalModeButton.textContent = peopleCount > 1 ? 'Clean total each' : 'Clean total';
+    totalModeButton.textContent = 'Total';
+    totalModeButton.setAttribute('aria-label', peopleCount > 1 ? 'Round total per person to whole dollars' : 'Round total to whole dollars');
     tipModeButton.dataset.mode = peopleCount > 1 ? 'splitTip' : 'tip';
-    tipModeButton.textContent = peopleCount > 1 ? 'Clean tip each' : 'Clean tip';
+    tipModeButton.textContent = 'Tip';
+    tipModeButton.setAttribute('aria-label', peopleCount > 1 ? 'Round tip per person to whole dollars' : 'Round tip to whole dollars');
 }
 
 function changePeopleCount(change) {
