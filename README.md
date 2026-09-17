@@ -14,6 +14,9 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 - Adapts to a split-screen layout on desktop
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
+- Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
+
+Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 
 ## Use it like an app
 

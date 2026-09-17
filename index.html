@@ -35,7 +35,27 @@
                 <div class="field-group">
                     <label for="billAmount">Bill amount</label>
                     <div class="money-input"><span aria-hidden="true">$</span><input type="text" id="billAmount" name="billAmount" inputmode="numeric" pattern="[0-9]*" placeholder="0.00" autocomplete="off" aria-describedby="billHint" autofocus></div>
-                    <p class="input-hint" id="billHint">Just type the digits — 1234 becomes $12.34</p>
+                    <div class="bill-tools">
+                        <p class="input-hint" id="billHint">Just type the digits — 1234 becomes $12.34</p>
+                        <label class="scan-button" for="receiptInput">
+                            <span aria-hidden="true">▣</span> Scan receipt
+                        </label>
+                        <input class="visually-hidden" type="file" id="receiptInput" accept="image/*" capture="environment">
+                    </div>
+                    <div class="scan-status" id="scanStatus" role="status" aria-live="polite" hidden>
+                        <div class="scan-progress"><span id="scanProgress"></span></div>
+                        <p id="scanMessage">Preparing receipt scanner…</p>
+                    </div>
+                    <div class="scan-result" id="scanResult" hidden>
+                        <div>
+                            <span>Detected receipt total</span>
+                            <label><span aria-hidden="true">$</span><input type="number" id="detectedTotal" inputmode="decimal" min="0" step="0.01" aria-label="Detected receipt total"></label>
+                        </div>
+                        <div class="scan-actions">
+                            <button type="button" id="cancelScan">Cancel</button>
+                            <button type="button" id="useDetectedTotal">Use total</button>
+                        </div>
+                    </div>
                 </div>
                 <fieldset class="tip-fieldset">
                     <legend>Tip</legend>
@@ -57,7 +77,7 @@
                     <p class="rounding-note" id="roundingNote">Enter a bill to see the rounded total.</p>
                 </div>
             </div>
-            <footer><span>Final total rounds to the nearest dollar</span><span>© 2023 DALL·E 3</span></footer>
+            <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
     <script src="script.js"></script>

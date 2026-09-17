@@ -3,6 +3,12 @@ const tipInput = document.querySelector('#tipPercentage');
 const tipButtons = document.querySelectorAll('[data-tip]');
 const resetButton = document.querySelector('#resetButton');
 const recommendationButton = document.querySelector('#recommendation');
+const receiptInput = document.querySelector('#receiptInput');
+const scanStatus = document.querySelector('#scanStatus');
+const scanMessage = document.querySelector('#scanMessage');
+const scanProgress = document.querySelector('#scanProgress');
+const scanResult = document.querySelector('#scanResult');
+const detectedTotalInput = document.querySelector('#detectedTotal');
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
 let billCents = 0;
@@ -82,6 +88,92 @@ function handleBillInput() {
     calculateTip();
 }
 
+function loadReceiptScanner() {
+    if (window.Tesseract) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@6/dist/tesseract.min.js';
+        script.crossOrigin = 'anonymous';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('The receipt scanner could not be downloaded.'));
+        document.head.appendChild(script);
+    });
+}
+
+async function prepareReceiptImage(file) {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1800 / bitmap.width);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const image = context.getImageData(0, 0, canvas.width, canvas.height);
+    for (let index = 0; index < image.data.length; index += 4) {
+        const gray = image.data[index] * .299 + image.data[index + 1] * .587 + image.data[index + 2] * .114;
+        const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+        image.data[index] = contrasted;
+        image.data[index + 1] = contrasted;
+        image.data[index + 2] = contrasted;
+    }
+    context.putImageData(image, 0, 0);
+    return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', .9));
+}
+
+function extractReceiptTotal(text) {
+    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const candidates = [];
+    lines.forEach((line, lineIndex) => {
+        const upper = line.toUpperCase();
+        const amounts = [...line.matchAll(/(?:\$|USD\s*)?(\d{1,4}(?:,\d{3})*\.\d{2})\b/g)];
+        amounts.forEach((match, amountIndex) => {
+            const amount = Number.parseFloat(match[1].replace(/,/g, ''));
+            if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) return;
+            let score = lineIndex / Math.max(lines.length, 1);
+            if (/GRAND\s*TOTAL|AMOUNT\s*DUE|TOTAL\s*DUE|BALANCE\s*DUE/.test(upper)) score += 12;
+            else if (/\bTOTAL\b/.test(upper)) score += 8;
+            if (/SUB\s*TOTAL|SUBTOTAL|TAX|TIP|GRATUITY|CHANGE|CASH|TENDER|SAVINGS/.test(upper)) score -= 10;
+            score += amountIndex * .1;
+            candidates.push({ amount, score });
+        });
+    });
+    candidates.sort((a, b) => b.score - a.score || b.amount - a.amount);
+    return candidates[0]?.amount ?? null;
+}
+
+async function scanReceipt(file) {
+    scanResult.hidden = true;
+    scanStatus.hidden = false;
+    scanProgress.style.width = '3%';
+    scanMessage.textContent = 'Loading the private on-device scanner…';
+    let worker;
+    try {
+        await loadReceiptScanner();
+        const preparedImage = await prepareReceiptImage(file);
+        worker = await window.Tesseract.createWorker('eng', 1, {
+            logger: ({ status, progress }) => {
+                if (Number.isFinite(progress)) scanProgress.style.width = `${Math.max(5, Math.round(progress * 100))}%`;
+                scanMessage.textContent = status === 'recognizing text' ? 'Reading receipt text…' : 'Preparing receipt scanner…';
+            }
+        });
+        const result = await worker.recognize(preparedImage);
+        const detectedTotal = extractReceiptTotal(result.data.text);
+        if (detectedTotal === null) throw new Error('I could not confidently find a total. Try a flatter, brighter photo.');
+        detectedTotalInput.value = detectedTotal.toFixed(2);
+        scanStatus.hidden = true;
+        scanResult.hidden = false;
+        detectedTotalInput.focus();
+        detectedTotalInput.select();
+    } catch (error) {
+        scanProgress.style.width = '0';
+        scanMessage.textContent = error.message || 'The receipt could not be read. Please enter the amount manually.';
+    } finally {
+        if (worker) await worker.terminate();
+        receiptInput.value = '';
+    }
+}
+
 tipButtons.forEach((button) => button.addEventListener('click', () => {
     tipOverridden = true;
     tipInput.value = button.dataset.tip;
@@ -91,6 +183,23 @@ tipButtons.forEach((button) => button.addEventListener('click', () => {
 
 tipInput.addEventListener('input', () => { tipOverridden = true; setActiveTip(tipInput.value); calculateTip(); });
 billInput.addEventListener('input', handleBillInput);
+receiptInput.addEventListener('change', () => {
+    const file = receiptInput.files?.[0];
+    if (file) scanReceipt(file);
+});
+document.querySelector('#cancelScan').addEventListener('click', () => { scanResult.hidden = true; billInput.focus(); });
+document.querySelector('#useDetectedTotal').addEventListener('click', () => {
+    const detected = Number.parseFloat(detectedTotalInput.value);
+    if (!Number.isFinite(detected) || detected <= 0) {
+        detectedTotalInput.focus();
+        return;
+    }
+    billCents = Math.round(detected * 100);
+    billInput.value = (billCents / 100).toFixed(2);
+    tipOverridden = false;
+    scanResult.hidden = true;
+    calculateTip();
+});
 recommendationButton.addEventListener('click', () => {
     tipOverridden = false;
     tipInput.value = recommendedPercentage;
@@ -101,6 +210,8 @@ resetButton.addEventListener('click', () => {
     billCents = 0;
     tipOverridden = false;
     billInput.value = '';
+    scanStatus.hidden = true;
+    scanResult.hidden = true;
     tipInput.value = '18';
     setActiveTip(18);
     calculateTip();
