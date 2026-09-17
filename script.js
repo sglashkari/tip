@@ -14,7 +14,8 @@ const detectedTotalInput = document.querySelector('#detectedTotal');
 const removePersonButton = document.querySelector('#removePerson');
 const addPersonButton = document.querySelector('#addPerson');
 const peopleCountOutput = document.querySelector('#peopleCount');
-const selectedRateValue = document.querySelector('#selectedRateValue');
+const billShare = document.querySelector('#billShare');
+const billEachValue = document.querySelector('#billEachValue');
 const targetRateValue = document.querySelector('#targetRateValue');
 const lowerTargetButton = document.querySelector('#lowerTarget');
 const raiseTargetButton = document.querySelector('#raiseTarget');
@@ -154,10 +155,10 @@ function renderOptionWheel() {
         const metrics = peopleCount > 1
             ? metric('Total each', currency.format(split.totalEachCents / 100))
                 + metric('Tip each', currency.format(split.tipEachCents / 100))
-                + metric('Bill each', currency.format(split.billEachCents / 100))
+                + metric('Percent', option.effectivePercentage.toFixed(2) + '%')
             : metric('Total', currency.format(option.total))
                 + metric('Tip', currency.format(option.tip))
-                + metric('Bill', currency.format(billCents / 100));
+                + metric('Percent', option.effectivePercentage.toFixed(2) + '%');
         const groupDetails = peopleCount > 1
             ? `${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
             : '';
@@ -192,6 +193,8 @@ function selectOption(index, center = true) {
 
 function updatePeopleControl() {
     peopleCountOutput.textContent = String(peopleCount);
+    billShare.hidden = peopleCount === 1;
+    billEachValue.textContent = billCents > 0 ? currency.format(Math.ceil(billCents / peopleCount) / 100) : '—';
     removePersonButton.disabled = peopleCount === 1;
     addPersonButton.disabled = peopleCount === 20;
     const totalModeButton = modeButtons.find((button) => button.dataset.family === 'total');
@@ -297,11 +300,7 @@ function buildTipOptions(bill) {
 
 function renderSelectedOption() {
     const option = tipOptions[selectedOptionIndex];
-    if (!option) {
-        selectedRateValue.textContent = '—';
-        return;
-    }
-    selectedRateValue.textContent = option.effectivePercentage.toFixed(2) + '%';
+    if (!option) return;
     const isBest = selectedOptionIndex === bestOptionIndex;
     selectionAnnouncement.textContent = `${isBest ? 'Best fit selected. ' : 'Selected. '}${describeOption(option)}`;
     optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {

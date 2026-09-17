@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=25">
+    <link rel="stylesheet" href="styles.css?v=26">
 </head>
 <body>
     <main class="app-shell">
@@ -73,7 +73,6 @@
                                 <output id="targetRateValue" aria-live="polite">16%</output>
                                 <button type="button" id="raiseTarget" aria-label="Raise target tip">+</button>
                             </div>
-                            <p class="selected-rate">Effective <output id="selectedRateValue" aria-live="polite">—</output></p>
                         </div>
                         <div class="setup-control">
                             <label id="peopleLabel">People</label>
@@ -82,6 +81,7 @@
                                 <output id="peopleCount" aria-live="polite">1</output>
                                 <button type="button" id="addPerson" aria-label="Add one person"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="7" r="3"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M16 10h6M19 7v6"/></svg></button>
                             </div>
+                            <p class="bill-share" id="billShare" hidden>Bill each <output id="billEachValue" aria-live="polite">—</output></p>
                         </div>
                     </div>
                     <fieldset class="rounding-mode">
@@ -108,6 +108,6 @@
             <footer><span>Receipt scans stay on this device</span><span>No account needed</span></footer>
         </section>
     </main>
-    <script src="script.js?v=25"></script>
+    <script src="script.js?v=26"></script>
 </body>
 </html>

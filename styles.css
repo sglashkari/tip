@@ -138,8 +138,6 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
 }
 
 /* Keep the form near the header and make adjacent choices readable. */
-.selected-rate { display:flex; justify-content:center; align-items:baseline; gap:.35rem; margin:.45rem 0 0; color:var(--muted); font-size:.8rem; }
-.setup-control .selected-rate output { color:#075d64; font-size:1rem; font-weight:800; }
 .fit-picker-heading { padding:.15rem .2rem .5rem; }
 .fit-picker-heading>span { color:var(--ink); font-weight:800; font-size:1rem; }
 .fit-picker-heading>strong { color:#075d64; font-size:.8rem; background:#e7f8f9; padding:.3rem .5rem; border-radius:999px; }
@@ -156,3 +154,7 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
  .mobile-header { margin-bottom:.65rem; }
  .option-wheel { height:clamp(15rem,34dvh,20rem); padding-block:calc((clamp(15rem,34dvh,20rem) - 5.5rem)/2); }
 }
+
+.bill-share { display:flex; justify-content:center; align-items:baseline; gap:.35rem; margin:.45rem 0 0; color:var(--muted); font-size:.8rem; }
+.bill-share[hidden] { display:none; }
+.setup-control .bill-share output { color:#075d64; font-size:1rem; font-weight:800; }
