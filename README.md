@@ -10,7 +10,7 @@ A fast, responsive tip calculator that lets the user choose a clean total, a who
 - Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
 - Generates relevant options with an effective tip between 5% and 25%
 - Defaults to the option closest to a 16% effective tip while preferring rates of at least 14%, and provides a vertically scrolling, snap-to-option list for comparing alternatives
-- Switches among **Clean total**, **Clean tip**, and **Exact rate** calculation styles
+- Switches among **Clean total**, **Clean tip**, and **Exact rate**, then adds **Clean total each** and **Clean tip each** whenever the bill is split
 - Uses tap-friendly controls to adjust and remember a preferred tip target from 5% to 25%
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
@@ -52,7 +52,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 
 ## Calculation
 
-The app can generate options by whole-dollar total, whole-dollar tip, or whole-percent rate. It selects the option closest to the user's preferred rate, initially 16%, while favoring rates of at least 14% when the target is 14% or higher. Preferences stay on the device.
+The app can generate options by whole-dollar total, whole-dollar tip, whole-percent rate, whole-dollar total per person, or whole-dollar tip per person. It selects the option closest to the user's preferred rate, initially 16%, while favoring rates of at least 14% when the target is 14% or higher. Preferences stay on the device.
 
 ## License
 
