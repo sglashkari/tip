@@ -302,6 +302,44 @@ function calculateTip() {
     updatePeopleControl();
 }
 
+// Measure the rendered font, not a character-count guess.
+const amountMeasure = document.createElement('span');
+amountMeasure.setAttribute('aria-hidden', 'true');
+amountMeasure.style.cssText = 'position:fixed;left:-10000px;top:0;visibility:hidden;white-space:pre;pointer-events:none;';
+document.body.appendChild(amountMeasure);
+
+function fitBillAmount() {
+    const row = billInput.closest('.amount-row');
+    row.classList.remove('amount-expanded');
+    billInput.style.removeProperty('font-size');
+    const style = getComputedStyle(billInput);
+    const maximumSize = parseFloat(style.fontSize);
+    amountMeasure.style.font = style.font;
+    amountMeasure.style.letterSpacing = style.letterSpacing;
+    amountMeasure.textContent = billInput.value || billInput.placeholder;
+    const measuredWidth = amountMeasure.getBoundingClientRect().width;
+    if (!measuredWidth || !billInput.clientWidth) return;
+    const availableWidth = () => Math.max(1, billInput.clientWidth
+        - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 12);
+    let size = Math.min(maximumSize, maximumSize * availableWidth() / measuredWidth);
+    // Keep extremely long amounts readable by giving them the full row.
+    if (size < 16) {
+        row.classList.add('amount-expanded');
+        size = Math.min(maximumSize, maximumSize * availableWidth() / measuredWidth);
+    }
+    billInput.style.fontSize = Math.max(16, Math.floor(size)) + 'px';
+    billInput.scrollLeft = 0;
+}
+
+function scheduleAmountFit() {
+    fitBillAmount();
+    requestAnimationFrame(fitBillAmount);
+}
+
+window.addEventListener('resize', scheduleAmountFit);
+billInput.addEventListener('focus', scheduleAmountFit);
+if (document.fonts) document.fonts.ready.then(scheduleAmountFit);
+
 function handleBillInput(event) {
     const rawDigits = billInput.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, MAX_BILL_DIGITS);
     const deletingZero = event?.inputType?.startsWith('delete') && /^0+$/.test(rawDigits);
@@ -313,9 +351,8 @@ function handleBillInput(event) {
         billCents = Number.parseInt(digits, 10);
         billInput.value = (billCents / 100).toFixed(2);
     }
-    billInput.classList.toggle('amount-long', billInput.value.length > 9);
-    billInput.classList.toggle('amount-extra-long', billInput.value.length > 13);
     billInput.setSelectionRange(billInput.value.length, billInput.value.length);
+    scheduleAmountFit();
     calculateTip();
 }
 
@@ -460,6 +497,7 @@ document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     }
     billCents = Math.round(detected * 100);
     billInput.value = (billCents / 100).toFixed(2);
+    scheduleAmountFit();
     scanResult.hidden = true;
     calculateTip();
 });
@@ -467,7 +505,7 @@ resetButton.addEventListener('click', () => {
     billCents = 0;
     peopleCount = 1;
     billInput.value = '';
-    billInput.classList.remove('amount-long', 'amount-extra-long');
+    scheduleAmountFit();
     scanStatus.hidden = true;
     scanResult.hidden = true;
     calculateTip();
@@ -477,3 +515,5 @@ resetButton.addEventListener('click', () => {
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
 loadPreferences();
+
+scheduleAmountFit();
