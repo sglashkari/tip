@@ -125,7 +125,7 @@ async function prepareReceiptImage(file) {
             pixels.data[index + 2] = contrasted;
         }
         context.putImageData(pixels, 0, 0);
-        return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('The receipt photo could not be prepared.')), 'image/jpeg', .9));
+        return canvas;
     } finally {
         URL.revokeObjectURL(imageUrl);
     }
