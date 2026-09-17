@@ -102,33 +102,34 @@ function loadReceiptScanner() {
 }
 
 async function prepareReceiptImage(file) {
-    const imageUrl = URL.createObjectURL(file);
+    const imageUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('The selected photo could not be read.'));
+        reader.readAsDataURL(file);
+    });
     const sourceImage = new Image();
-    try {
-        await new Promise((resolve, reject) => {
-            sourceImage.onload = resolve;
-            sourceImage.onerror = () => reject(new Error('This photo format could not be opened. Try choosing a screenshot or JPEG photo.'));
-            sourceImage.src = imageUrl;
-        });
-        const scale = Math.min(1, 1800 / sourceImage.naturalWidth);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(sourceImage.naturalWidth * scale);
-        canvas.height = Math.round(sourceImage.naturalHeight * scale);
-        const context = canvas.getContext('2d', { willReadFrequently: true });
-        context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
-        const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-        for (let index = 0; index < pixels.data.length; index += 4) {
-            const gray = pixels.data[index] * .299 + pixels.data[index + 1] * .587 + pixels.data[index + 2] * .114;
-            const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
-            pixels.data[index] = contrasted;
-            pixels.data[index + 1] = contrasted;
-            pixels.data[index + 2] = contrasted;
-        }
-        context.putImageData(pixels, 0, 0);
-        return canvas;
-    } finally {
-        URL.revokeObjectURL(imageUrl);
+    await new Promise((resolve, reject) => {
+        sourceImage.onload = resolve;
+        sourceImage.onerror = () => reject(new Error('This photo format could not be opened. Try choosing a screenshot or JPEG photo.'));
+        sourceImage.src = imageUrl;
+    });
+    const scale = Math.min(1, 1800 / sourceImage.naturalWidth);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(sourceImage.naturalWidth * scale);
+    canvas.height = Math.round(sourceImage.naturalHeight * scale);
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    for (let index = 0; index < pixels.data.length; index += 4) {
+        const gray = pixels.data[index] * .299 + pixels.data[index + 1] * .587 + pixels.data[index + 2] * .114;
+        const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+        pixels.data[index] = contrasted;
+        pixels.data[index + 1] = contrasted;
+        pixels.data[index + 2] = contrasted;
     }
+    context.putImageData(pixels, 0, 0);
+    return canvas;
 }
 
 function extractReceiptTotal(text) {
