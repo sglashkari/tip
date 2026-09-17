@@ -29,9 +29,26 @@ let selectedOptionIndex = 0;
 let peopleCount = 1;
 let targetTipPercentage = 16;
 let roundingMode = 'total';
+const MAX_OPTION_COUNT = 81;
+const MAX_BILL_DIGITS = 15;
 
 function tapFeedback() {
     if (navigator.vibrate) navigator.vibrate(8);
+}
+
+function sampledIntegers(minimum, maximum, preferred) {
+    if (maximum < minimum) return [];
+    const count = maximum - minimum + 1;
+    if (count <= MAX_OPTION_COUNT) return Array.from({ length: count }, (_, index) => minimum + index);
+
+    const preferredFloor = Math.max(minimum, Math.min(maximum, Math.floor(preferred)));
+    const preferredCeiling = Math.max(minimum, Math.min(maximum, Math.ceil(preferred)));
+    const values = new Set([minimum, maximum, preferredFloor, preferredCeiling]);
+    const remainingSlots = MAX_OPTION_COUNT - values.size;
+    for (let index = 1; index <= remainingSlots; index += 1) {
+        values.add(Math.round(minimum + (maximum - minimum) * index / (remainingSlots + 1)));
+    }
+    return [...values].sort((a, b) => a - b);
 }
 
 function makeWholeDollarOptions(bill) {
@@ -39,7 +56,8 @@ function makeWholeDollarOptions(bill) {
     const minimumTotal = Math.ceil(bill * 1.05 - .000001);
     const maximumTotal = Math.floor(bill * 1.25 + .000001);
     const options = [];
-    for (let total = minimumTotal; total <= maximumTotal; total += 1) {
+    const totals = sampledIntegers(minimumTotal, maximumTotal, bill * (1 + targetTipPercentage / 100));
+    for (const total of totals) {
         const tip = total - bill;
         options.push({ total, tip, effectivePercentage: tip / bill * 100 });
     }
@@ -51,7 +69,8 @@ function makeWholeDollarTipOptions(bill) {
     const minimumTip = Math.ceil(bill * .05 - .000001);
     const maximumTip = Math.floor(bill * .25 + .000001);
     const options = [];
-    for (let tip = minimumTip; tip <= maximumTip; tip += 1) {
+    const tips = sampledIntegers(minimumTip, maximumTip, bill * targetTipPercentage / 100);
+    for (const tip of tips) {
         options.push({ total: bill + tip, tip, effectivePercentage: tip / bill * 100 });
     }
     return options;
@@ -73,7 +92,8 @@ function makeWholeTotalEachOptions(bill) {
     const minimumEach = Math.ceil(bill * 1.05 / peopleCount - .000001);
     const maximumEach = Math.floor(bill * 1.25 / peopleCount + .000001);
     const options = [];
-    for (let totalEach = minimumEach; totalEach <= maximumEach; totalEach += 1) {
+    const totalsEach = sampledIntegers(minimumEach, maximumEach, bill * (1 + targetTipPercentage / 100) / peopleCount);
+    for (const totalEach of totalsEach) {
         const total = totalEach * peopleCount;
         const tip = total - bill;
         options.push({ total, tip, effectivePercentage: tip / bill * 100 });
@@ -86,7 +106,8 @@ function makeWholeTipEachOptions(bill) {
     const minimumTipEach = Math.ceil(bill * .05 / peopleCount - .000001);
     const maximumTipEach = Math.floor(bill * .25 / peopleCount + .000001);
     const options = [];
-    for (let tipEach = minimumTipEach; tipEach <= maximumTipEach; tipEach += 1) {
+    const tipsEach = sampledIntegers(minimumTipEach, maximumTipEach, bill * targetTipPercentage / 100 / peopleCount);
+    for (const tipEach of tipsEach) {
         const tip = tipEach * peopleCount;
         options.push({ total: bill + tip, tip, effectivePercentage: tip / bill * 100 });
     }
@@ -281,8 +302,10 @@ function calculateTip() {
     updatePeopleControl();
 }
 
-function handleBillInput() {
-    const digits = billInput.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+function handleBillInput(event) {
+    const rawDigits = billInput.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, MAX_BILL_DIGITS);
+    const deletingZero = event?.inputType?.startsWith('delete') && /^0+$/.test(rawDigits);
+    const digits = deletingZero ? '' : rawDigits;
     if (!digits) {
         billCents = 0;
         billInput.value = '';
@@ -290,6 +313,8 @@ function handleBillInput() {
         billCents = Number.parseInt(digits, 10);
         billInput.value = (billCents / 100).toFixed(2);
     }
+    billInput.classList.toggle('amount-long', billInput.value.length > 9);
+    billInput.classList.toggle('amount-extra-long', billInput.value.length > 13);
     billInput.setSelectionRange(billInput.value.length, billInput.value.length);
     calculateTip();
 }
@@ -442,6 +467,7 @@ resetButton.addEventListener('click', () => {
     billCents = 0;
     peopleCount = 1;
     billInput.value = '';
+    billInput.classList.remove('amount-long', 'amount-extra-long');
     scanStatus.hidden = true;
     scanResult.hidden = true;
     calculateTip();
