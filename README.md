@@ -10,7 +10,7 @@ A fast, responsive tip calculator that lets the user choose a clean total, a who
 - Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
 - Generates relevant options with an effective tip between 5% and 25%
 - Defaults to the option closest to a 16% effective tip while preferring rates of at least 14%, and provides a vertically scrolling, snap-to-option list for comparing alternatives
-- Switches among **Clean total**, **Clean tip**, and **Exact rate**, then adds **Clean total each** and **Clean tip each** whenever the bill is split
+- Switches among **Clean total**, **Clean tip**, and **Exact rate**; when the bill is split, the first two automatically become **Clean total each** and **Clean tip each**
 - Uses tap-friendly controls to adjust and remember a preferred tip target from 5% to 25%
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
@@ -18,7 +18,7 @@ A fast, responsive tip calculator that lets the user choose a clean total, a who
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
-- Shows bill, tip, and total per person directly in every comparison row when splitting among up to 20 people, including exact remainder-cent shares
+- Shows bill, tip, and total per person directly in every comparison row when splitting among up to 20 people, using simple rounded-up per-person amounts
 
 Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 

@@ -57,10 +57,8 @@ button { -webkit-tap-highlight-color:transparent; }
 .compact-stepper span { overflow:hidden; color:var(--muted); font-size:.58rem; font-weight:700; text-align:center; text-overflow:ellipsis; }
 .rounding-mode { min-width:0; margin:.75rem 0 0; padding:.75rem 0 0; border:0; border-top:1px solid var(--line); }
 .rounding-mode legend { padding:0 .35rem 0 0; color:var(--muted); font-size:.68rem; font-weight:700; }
-.mode-tabs { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:.35rem; }
-.mode-tab { grid-column:span 2; min-width:0; min-height:2.55rem; padding:.4rem .2rem; border:1px solid transparent; border-radius:.65rem; background:var(--paper); color:var(--muted); font-size:.7rem; font-weight:700; line-height:1.2; cursor:pointer; }
-.mode-tab.split-mode { grid-column:span 3; }
-.mode-tab[hidden] { display:none; }
+.mode-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.35rem; }
+.mode-tab { min-width:0; min-height:2.55rem; padding:.4rem .2rem; border:1px solid transparent; border-radius:.65rem; background:var(--paper); color:var(--muted); font-size:.7rem; font-weight:700; line-height:1.2; cursor:pointer; }
 .mode-tab.active { border-color:#299da5; background:#e7f8f9; color:#075d64; box-shadow:0 3px 10px rgba(42,156,165,.12); }
 .mode-help { margin:.45rem 0 0; color:var(--muted); font-size:.66rem; text-align:center; }
 .mode-tab:focus-visible,.compact-stepper button:focus-visible { outline:2px solid var(--coral); outline-offset:-2px; }

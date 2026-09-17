@@ -99,28 +99,23 @@ function describeOption(option) {
     const base = `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}% effective rate`;
     if (peopleCount === 1) return base;
     const split = splitOption(option);
-    return `${base} · split ${peopleCount} ways: ${currency.format(split.billEachCents / 100)} bill, ${currency.format(split.tipEachCents / 100)} tip, and ${currency.format(split.totalEachCents / 100)} total per person`;
+    return `${base} · split ${peopleCount} ways: ${currency.format(split.billEachCents / 100)} bill, ${currency.format(split.tipEachCents / 100)} tip, and ${currency.format(split.totalEachCents / 100)} total per person${split.roundedUp ? ', rounded up' : ''}`;
 }
 
 function splitOption(option) {
     const totalCents = Math.round(option.total * 100);
-    const tipCents = Math.round(option.tip * 100);
+    const billEachCents = Math.ceil(billCents / peopleCount);
+    const totalEachCents = Math.ceil(totalCents / peopleCount);
     return {
-        billEachCents: Math.floor(billCents / peopleCount),
-        totalEachCents: Math.floor(totalCents / peopleCount),
-        tipEachCents: Math.floor(tipCents / peopleCount),
-        extraBillShares: billCents % peopleCount,
-        extraTotalShares: totalCents % peopleCount,
-        extraTipShares: tipCents % peopleCount
+        billEachCents,
+        totalEachCents,
+        tipEachCents: Math.max(0, totalEachCents - billEachCents),
+        roundedUp: billCents % peopleCount !== 0 || totalCents % peopleCount !== 0
     };
 }
 
 function splitNote(split) {
-    const notes = [];
-    if (split.extraBillShares) notes.push(`${split.extraBillShares} ${split.extraBillShares === 1 ? 'has' : 'have'} ${currency.format((split.billEachCents + 1) / 100)} bill`);
-    if (split.extraTotalShares) notes.push(`${split.extraTotalShares} ${split.extraTotalShares === 1 ? 'pays' : 'pay'} ${currency.format((split.totalEachCents + 1) / 100)} total`);
-    if (split.extraTipShares) notes.push(`${split.extraTipShares} ${split.extraTipShares === 1 ? 'tips' : 'tip'} ${currency.format((split.tipEachCents + 1) / 100)}`);
-    return notes.length ? notes.join(' · ') : `${peopleCount} equal shares`;
+    return split.roundedUp ? 'Rounded up per person' : 'Even split';
 }
 
 function renderOptionWheel() {
@@ -160,21 +155,21 @@ function updatePeopleControl() {
     peopleCountOutput.textContent = `${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}`;
     removePersonButton.disabled = peopleCount === 1;
     addPersonButton.disabled = peopleCount === 20;
-    modeButtons.filter((button) => button.classList.contains('split-mode')).forEach((button) => {
-        button.hidden = peopleCount === 1;
-    });
+    const totalModeButton = modeButtons.find((button) => button.dataset.family === 'total');
+    const tipModeButton = modeButtons.find((button) => button.dataset.family === 'tip');
+    totalModeButton.dataset.mode = peopleCount > 1 ? 'splitTotal' : 'total';
+    totalModeButton.textContent = peopleCount > 1 ? 'Clean total each' : 'Clean total';
+    tipModeButton.dataset.mode = peopleCount > 1 ? 'splitTip' : 'tip';
+    tipModeButton.textContent = peopleCount > 1 ? 'Clean tip each' : 'Clean tip';
 }
 
 function changePeopleCount(change) {
     peopleCount = Math.max(1, Math.min(20, peopleCount + change));
-    updatePeopleControl();
-    if (peopleCount === 1 && roundingMode === 'splitTotal') {
-        setRoundingMode('total');
-    } else if (peopleCount === 1 && roundingMode === 'splitTip') {
-        setRoundingMode('tip');
-    } else {
-        calculateTip();
-    }
+    if (peopleCount > 1 && roundingMode === 'total') roundingMode = 'splitTotal';
+    if (peopleCount > 1 && roundingMode === 'tip') roundingMode = 'splitTip';
+    if (peopleCount === 1 && roundingMode === 'splitTotal') roundingMode = 'total';
+    if (peopleCount === 1 && roundingMode === 'splitTip') roundingMode = 'tip';
+    setRoundingMode(roundingMode);
     if (navigator.vibrate) navigator.vibrate(8);
 }
 
@@ -194,8 +189,11 @@ function setTargetTip(value, save = true) {
 function setRoundingMode(mode, save = true) {
     const allowedModes = ['total', 'tip', 'rate', 'splitTotal', 'splitTip'];
     roundingMode = allowedModes.includes(mode) ? mode : 'total';
+    if (peopleCount > 1 && roundingMode === 'total') roundingMode = 'splitTotal';
+    if (peopleCount > 1 && roundingMode === 'tip') roundingMode = 'splitTip';
     if (peopleCount === 1 && roundingMode === 'splitTotal') roundingMode = 'total';
     if (peopleCount === 1 && roundingMode === 'splitTip') roundingMode = 'tip';
+    updatePeopleControl();
     const modeCopy = {
         total: { aria: 'Compare clean-total tip options', help: 'Ends the check on a whole dollar.' },
         tip: { aria: 'Compare whole-dollar tip options', help: 'Makes the tip itself a whole dollar.' },
