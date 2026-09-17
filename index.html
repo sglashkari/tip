@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=22">
+    <link rel="stylesheet" href="styles.css?v=23">
 </head>
 <body>
     <main class="app-shell">
@@ -65,25 +65,21 @@
                         </div>
                     </div>
                 </div>
-                <section class="tip-setup" aria-labelledby="setupTitle">
-                    <div class="setup-heading">
-                        <h3 id="setupTitle">Tip setup</h3>
-                        <span>Adjust before you compare</span>
-                    </div>
+                <section class="tip-setup" aria-label="Tip and split settings">
                     <div class="setup-controls">
                         <div class="setup-control">
-                            <div><span>Target tip</span><output id="targetRateValue">16%</output></div>
-                            <div class="compact-stepper" role="group" aria-label="Target tip percentage">
+                            <label id="targetLabel">Tip target</label>
+                            <div class="compact-stepper" role="group" aria-labelledby="targetLabel">
                                 <button type="button" id="lowerTarget" aria-label="Lower target tip">−</button>
-                                <span aria-hidden="true">%</span>
+                                <output id="targetRateValue" aria-live="polite">16%</output>
                                 <button type="button" id="raiseTarget" aria-label="Raise target tip">+</button>
                             </div>
                         </div>
                         <div class="setup-control">
-                            <div><span>Split between</span><output id="peopleCount" aria-live="polite">1 person</output></div>
-                            <div class="compact-stepper" role="group" aria-label="Number of people">
+                            <label id="peopleLabel">People</label>
+                            <div class="compact-stepper" role="group" aria-labelledby="peopleLabel">
                                 <button type="button" id="removePerson" aria-label="Remove one person" disabled>−</button>
-                                <span aria-hidden="true">people</span>
+                                <output id="peopleCount" aria-live="polite">1</output>
                                 <button type="button" id="addPerson" aria-label="Add one person">+</button>
                             </div>
                         </div>
@@ -95,7 +91,7 @@
                             <button type="button" class="mode-tab" data-family="tip" data-mode="tip" aria-pressed="false">Clean tip</button>
                             <button type="button" class="mode-tab" data-mode="rate" aria-pressed="false">Exact rate</button>
                         </div>
-                        <p class="mode-help" id="modeHelp">Ends the check on a whole dollar.</p>
+                        <p class="visually-hidden" id="modeHelp">Ends the check on a whole dollar.</p>
                     </fieldset>
                 </section>
                 <fieldset class="tip-fieldset">
@@ -112,6 +108,6 @@
             <footer><span>Receipt scans stay on this device</span><span>No account needed</span></footer>
         </section>
     </main>
-    <script src="script.js?v=22"></script>
+    <script src="script.js?v=23"></script>
 </body>
 </html>

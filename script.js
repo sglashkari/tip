@@ -149,8 +149,16 @@ function renderOptionWheel() {
     optionWheel.replaceChildren();
     tipOptions.forEach((option, index) => {
         const split = splitOption(option);
-        const personDetails = peopleCount > 1
-            ? `<span class="option-person"><span>Per person</span><span>Bill <strong>${currency.format(split.billEachCents / 100)}</strong></span><span>Tip <strong>${currency.format(split.tipEachCents / 100)}</strong></span><span>Total <strong>${currency.format(split.totalEachCents / 100)}</strong></span></span><span class="option-split-note">${splitNote(split)}</span>`
+        const metric = (label, value) => `<span class="option-metric"><span class="option-label">${label}</span><strong>${value}</strong></span>`;
+        const metrics = peopleCount > 1
+            ? metric('Total each', currency.format(split.totalEachCents / 100))
+                + metric('Tip each', currency.format(split.tipEachCents / 100))
+                + metric('Bill each', currency.format(split.billEachCents / 100))
+            : metric('Total', currency.format(option.total))
+                + metric('Tip', currency.format(option.tip))
+                + metric('Effective', option.effectivePercentage.toFixed(2) + '%');
+        const groupDetails = peopleCount > 1
+            ? `<span class="option-group"><span>Group total <strong>${currency.format(option.total)}</strong></span><span>Group tip <strong>${currency.format(option.tip)}</strong></span><span>Rate <strong>${option.effectivePercentage.toFixed(2)}%</strong></span></span>${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
             : '';
         const button = document.createElement('button');
         button.type = 'button';
@@ -158,7 +166,7 @@ function renderOptionWheel() {
         button.dataset.index = index;
         button.setAttribute('role', 'option');
         button.setAttribute('aria-label', describeOption(option));
-        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}<span class="option-metric"><span class="option-label">Total</span><strong>${currency.format(option.total)}</strong></span><span class="option-metric"><span class="option-label">Tip</span><strong>${currency.format(option.tip)}</strong></span><span class="option-metric"><span class="option-label">Effective</span><strong>${option.effectivePercentage.toFixed(2)}%</strong></span>${personDetails}`;
+        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}${metrics}${groupDetails}`;
         button.addEventListener('click', () => {
             selectOption(index);
             tapFeedback();
@@ -182,7 +190,7 @@ function selectOption(index, center = true) {
 }
 
 function updatePeopleControl() {
-    peopleCountOutput.textContent = `${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}`;
+    peopleCountOutput.textContent = String(peopleCount);
     removePersonButton.disabled = peopleCount === 1;
     addPersonButton.disabled = peopleCount === 20;
     const totalModeButton = modeButtons.find((button) => button.dataset.family === 'total');
