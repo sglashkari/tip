@@ -7,6 +7,7 @@ const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: '
 
 let billCents = 0;
 let recommendedPercentage = 18;
+let tipOverridden = false;
 
 function setActiveTip(value) {
     tipButtons.forEach((button) => button.classList.toggle('active', Number(button.dataset.tip) === Number(value)));
@@ -35,16 +36,20 @@ function updateRecommendation(bill) {
     }
     const best = findBestWholeDollarTip(bill);
     recommendedPercentage = best.percentage;
+    if (!tipOverridden) {
+        tipInput.value = best.percentage;
+        setActiveTip(best.percentage);
+    }
     recommendationButton.disabled = false;
-    label.textContent = `${best.percentage}% → ${currency.format(best.roundedTotal)}`;
+    label.textContent = `${best.percentage}% → ${currency.format(best.roundedTotal)}${tipOverridden ? '' : ' · Default'}`;
     recommendationButton.setAttribute('aria-label', `Use recommended ${best.percentage} percent tip for a ${currency.format(best.roundedTotal)} total`);
 }
 
 function calculateTip() {
     const bill = billCents / 100;
+    updateRecommendation(bill);
     const percentage = Number.parseFloat(tipInput.value);
     const safePercentage = Number.isFinite(percentage) && percentage >= 0 ? percentage : 0;
-    updateRecommendation(bill);
 
     if (bill <= 0) {
         document.querySelector('#tipAmount').textContent = '$0.00';
@@ -78,20 +83,23 @@ function handleBillInput() {
 }
 
 tipButtons.forEach((button) => button.addEventListener('click', () => {
+    tipOverridden = true;
     tipInput.value = button.dataset.tip;
     setActiveTip(button.dataset.tip);
     calculateTip();
 }));
 
-tipInput.addEventListener('input', () => { setActiveTip(tipInput.value); calculateTip(); });
+tipInput.addEventListener('input', () => { tipOverridden = true; setActiveTip(tipInput.value); calculateTip(); });
 billInput.addEventListener('input', handleBillInput);
 recommendationButton.addEventListener('click', () => {
+    tipOverridden = false;
     tipInput.value = recommendedPercentage;
     setActiveTip(recommendedPercentage);
     calculateTip();
 });
 resetButton.addEventListener('click', () => {
     billCents = 0;
+    tipOverridden = false;
     billInput.value = '';
     tipInput.value = '18';
     setActiveTip(18);
