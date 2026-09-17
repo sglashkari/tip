@@ -4,6 +4,8 @@ const optionWheel = document.querySelector('#optionWheel');
 const selectionAnnouncement = document.querySelector('#selectionAnnouncement');
 const cameraInput = document.querySelector('#cameraInput');
 const uploadInput = document.querySelector('#uploadInput');
+const cameraButton = document.querySelector('#cameraButton');
+const uploadButton = document.querySelector('#uploadButton');
 const scanStatus = document.querySelector('#scanStatus');
 const scanMessage = document.querySelector('#scanMessage');
 const scanProgress = document.querySelector('#scanProgress');
@@ -27,6 +29,10 @@ let selectedOptionIndex = 0;
 let peopleCount = 1;
 let targetTipPercentage = 16;
 let roundingMode = 'total';
+
+function tapFeedback() {
+    if (navigator.vibrate) navigator.vibrate(8);
+}
 
 function makeWholeDollarOptions(bill) {
     if (bill <= 0) return [];
@@ -132,7 +138,10 @@ function renderOptionWheel() {
         button.setAttribute('role', 'option');
         button.setAttribute('aria-label', describeOption(option));
         button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}<span class="option-metric"><span class="option-label">Total</span><strong>${currency.format(option.total)}</strong></span><span class="option-metric"><span class="option-label">Tip</span><strong>${currency.format(option.tip)}</strong></span><span class="option-metric"><span class="option-label">Effective</span><strong>${option.effectivePercentage.toFixed(2)}%</strong></span>${personDetails}`;
-        button.addEventListener('click', () => selectOption(index));
+        button.addEventListener('click', () => {
+            selectOption(index);
+            tapFeedback();
+        });
         optionWheel.appendChild(button);
     });
     requestAnimationFrame(() => centerSelectedOption('auto'));
@@ -170,7 +179,6 @@ function changePeopleCount(change) {
     if (peopleCount === 1 && roundingMode === 'splitTotal') roundingMode = 'total';
     if (peopleCount === 1 && roundingMode === 'splitTip') roundingMode = 'tip';
     setRoundingMode(roundingMode);
-    if (navigator.vibrate) navigator.vibrate(8);
 }
 
 function savePreference(key, value) {
@@ -182,7 +190,10 @@ function setTargetTip(value, save = true) {
     targetRateValue.textContent = `${targetTipPercentage}%`;
     lowerTargetButton.disabled = targetTipPercentage === 5;
     raiseTargetButton.disabled = targetTipPercentage === 25;
-    if (save) savePreference('icebergTargetTip', targetTipPercentage);
+    if (save) {
+        savePreference('icebergTargetTip', targetTipPercentage);
+        tapFeedback();
+    }
     calculateTip();
 }
 
@@ -209,7 +220,10 @@ function setRoundingMode(mode, save = true) {
         button.classList.toggle('active', active);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
-    if (save) savePreference('icebergRoundingMode', roundingMode);
+    if (save) {
+        savePreference('icebergRoundingMode', roundingMode);
+        tapFeedback();
+    }
     calculateTip();
 }
 
@@ -403,6 +417,8 @@ function scanSelectedReceipt(input) {
     if (file) scanReceipt(file);
 }
 
+cameraButton.addEventListener('click', () => cameraInput.click());
+uploadButton.addEventListener('click', () => uploadInput.click());
 cameraInput.addEventListener('change', () => scanSelectedReceipt(cameraInput));
 uploadInput.addEventListener('change', () => scanSelectedReceipt(uploadInput));
 removePersonButton.addEventListener('click', () => changePeopleCount(-1));
@@ -429,6 +445,7 @@ resetButton.addEventListener('click', () => {
     scanStatus.hidden = true;
     scanResult.hidden = true;
     calculateTip();
+    tapFeedback();
     billInput.focus();
 });
 
