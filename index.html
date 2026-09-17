@@ -1,81 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#072d3a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Iceberg Tip">
+    <meta name="description" content="A quick tip calculator that rounds the final total to a whole dollar.">
     <title>Tip of the Iceberg</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Pacifico&display=swap">
-    <style>
-        body {
-            background-image: url('calculator.png');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        #container {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            margin: auto;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-        }
-        h1 {
-            font-family: 'Pacifico', cursive;
-            font-size: 36px;
-            margin: 0 0 20px 0;
-        }
-        @media(min-width: 768px) {
-            h1 {
-                font-size: 48px;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<div id="container">
-    <h1>Tip of the<br>Iceberg</h1>
-
-    <label for="billAmount">Bill Amount ($):</label><br>
-    <input type="number" id="billAmount" name="billAmount" oninput="calculateTip()" required><br>
-
-    <label for="tipPercentage">Tip (%):</label><br>
-    <input type="number" id="tipPercentage" name="tipPercentage" value="15" oninput="calculateTip()" required><br><br>
-
-    <p id="output"></p>
-</div>
-
-<script>
-    function calculateTip() {
-        var billAmount = parseFloat(document.getElementById('billAmount').value);
-        var tipPercentage = parseFloat(document.getElementById('tipPercentage').value);
-        
-        // Use default tip percentage of 15% if no percentage is entered
-        if (isNaN(tipPercentage)) {
-            tipPercentage = 15;
-        }
-        
-        var preliminaryTip = billAmount * (tipPercentage / 100);
-        var preliminaryTotal = billAmount + preliminaryTip;
-        
-        // Round the total amount to the nearest whole number
-        var roundedTotal = Math.round(preliminaryTotal);
-        
-        // Recalculate the tip based on the rounded total
-        var tip = roundedTotal - billAmount;
-        
-        // Calculate the effective tip percentage
-        var effectiveTipPercentage = (tip / billAmount) * 100;
-        
-        document.getElementById('output').innerHTML = 
-            `Tip: $${tip.toFixed(2)}<br>
-             Total Amount: $${roundedTotal.toFixed(2)}<br>
-             Effective Tip: ${effectiveTipPercentage.toFixed(2)}%`;
-    }
-</script>
-
+    <main class="app-shell">
+        <section class="brand-panel" aria-label="Tip of the Iceberg">
+            <div class="brand-copy">
+                <span class="eyebrow">Round-total tip calculator</span>
+                <h1>Tip of the<br>Iceberg</h1>
+                <p>A tiny calculator for an easy finish to the check.</p>
+            </div>
+        </section>
+        <section class="calculator" aria-labelledby="calculator-title">
+            <header class="mobile-header">
+                <span class="mini-mark" aria-hidden="true">▲</span>
+                <div><p class="mobile-kicker">Tip calculator</p><h2 id="calculator-title">Tip of the Iceberg</h2></div>
+                <button class="reset" id="resetButton" type="button" aria-label="Reset calculator">Reset</button>
+            </header>
+            <div class="form-area">
+                <div class="field-group">
+                    <label for="billAmount">Bill amount</label>
+                    <div class="money-input"><span aria-hidden="true">$</span><input type="number" id="billAmount" name="billAmount" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autocomplete="off" autofocus></div>
+                </div>
+                <fieldset class="tip-fieldset">
+                    <legend>Tip</legend>
+                    <div class="tip-row" role="group" aria-label="Choose a tip percentage">
+                        <button class="tip-chip" type="button" data-tip="15">15%</button>
+                        <button class="tip-chip active" type="button" data-tip="18">18%</button>
+                        <button class="tip-chip" type="button" data-tip="20">20%</button>
+                        <button class="tip-chip" type="button" data-tip="25">25%</button>
+                        <label class="custom-tip" aria-label="Custom tip percentage"><input type="number" id="tipPercentage" name="tipPercentage" inputmode="decimal" min="0" step="1" value="18"><span>%</span></label>
+                    </div>
+                </fieldset>
+                <div class="result-card" aria-live="polite">
+                    <div class="result-primary"><span>Total</span><strong id="totalAmount">$0.00</strong></div>
+                    <div class="result-details"><p><span>Tip</span><strong id="tipAmount">$0.00</strong></p><p><span>Effective tip</span><strong id="effectiveTip">0.00%</strong></p></div>
+                    <p class="rounding-note" id="roundingNote">Enter a bill to see the rounded total.</p>
+                </div>
+            </div>
+            <footer><span>Final total rounds to the nearest dollar</span><span>© 2023 DALL·E 3</span></footer>
+        </section>
+    </main>
+    <script src="script.js"></script>
 </body>
 </html>
