@@ -9,12 +9,18 @@ const scanMessage = document.querySelector('#scanMessage');
 const scanProgress = document.querySelector('#scanProgress');
 const scanResult = document.querySelector('#scanResult');
 const detectedTotalInput = document.querySelector('#detectedTotal');
+const removePersonButton = document.querySelector('#removePerson');
+const addPersonButton = document.querySelector('#addPerson');
+const peopleCountOutput = document.querySelector('#peopleCount');
+const shareAmount = document.querySelector('#shareAmount');
+const shareDetail = document.querySelector('#shareDetail');
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
 let billCents = 0;
 let wholeDollarOptions = [];
 let bestOptionIndex = 0;
 let selectedOptionIndex = 0;
+let peopleCount = 1;
 
 function makeWholeDollarOptions(bill) {
     if (bill <= 0) return [];
@@ -61,6 +67,38 @@ function selectOption(index, center = true) {
     if (center) centerSelectedOption();
 }
 
+function renderSplit() {
+    const option = wholeDollarOptions[selectedOptionIndex];
+    peopleCountOutput.textContent = String(peopleCount);
+    removePersonButton.disabled = peopleCount === 1;
+    addPersonButton.disabled = peopleCount === 20;
+
+    if (!option) {
+        shareAmount.textContent = 'Enter a bill';
+        shareDetail.textContent = 'Choose a total before splitting.';
+        return;
+    }
+    if (peopleCount === 1) {
+        shareAmount.textContent = 'Not split';
+        shareDetail.textContent = 'Add people to divide the clean total.';
+        return;
+    }
+
+    const totalCents = Math.round(option.total * 100);
+    const baseShareCents = Math.floor(totalCents / peopleCount);
+    const extraCentShares = totalCents % peopleCount;
+    shareAmount.textContent = `${currency.format(baseShareCents / 100)} each`;
+    shareDetail.textContent = extraCentShares
+        ? `${extraCentShares} ${extraCentShares === 1 ? 'person adds' : 'people add'} 1¢`
+        : `${peopleCount} equal shares`;
+}
+
+function changePeopleCount(change) {
+    peopleCount = Math.max(1, Math.min(20, peopleCount + change));
+    renderSplit();
+    if (navigator.vibrate) navigator.vibrate(8);
+}
+
 function buildTipOptions(bill) {
     wholeDollarOptions = makeWholeDollarOptions(bill);
     if (!wholeDollarOptions.length) {
@@ -85,7 +123,10 @@ function buildTipOptions(bill) {
 
 function renderSelectedOption() {
     const option = wholeDollarOptions[selectedOptionIndex];
-    if (!option) return;
+    if (!option) {
+        renderSplit();
+        return;
+    }
     const isBest = selectedOptionIndex === bestOptionIndex;
     selectionAnnouncement.textContent = `${isBest ? 'Best fit selected. ' : 'Selected. '}${describeOption(option)}`;
     optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {
@@ -93,6 +134,7 @@ function renderSelectedOption() {
         item.classList.toggle('active', active);
         item.setAttribute('aria-selected', active ? 'true' : 'false');
     });
+    renderSplit();
 }
 
 function calculateTip() {
@@ -238,6 +280,8 @@ function scanSelectedReceipt(input) {
 
 cameraInput.addEventListener('change', () => scanSelectedReceipt(cameraInput));
 uploadInput.addEventListener('change', () => scanSelectedReceipt(uploadInput));
+removePersonButton.addEventListener('click', () => changePeopleCount(-1));
+addPersonButton.addEventListener('click', () => changePeopleCount(1));
 document.querySelector('#cancelScan').addEventListener('click', () => { scanResult.hidden = true; billInput.focus(); });
 document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     const detected = Number.parseFloat(detectedTotalInput.value);
@@ -252,6 +296,7 @@ document.querySelector('#useDetectedTotal').addEventListener('click', () => {
 });
 resetButton.addEventListener('click', () => {
     billCents = 0;
+    peopleCount = 1;
     billInput.value = '';
     scanStatus.hidden = true;
     scanResult.hidden = true;

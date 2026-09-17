@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
     <main class="app-shell">
@@ -75,10 +75,25 @@
                     </div>
                     <p class="visually-hidden" id="selectionAnnouncement" aria-live="polite"></p>
                 </fieldset>
+                <section class="split-card" aria-labelledby="splitTitle">
+                    <div class="split-copy">
+                        <h3 id="splitTitle">Split the clean total</h3>
+                        <p>Divide it exactly—no missing cents.</p>
+                    </div>
+                    <div class="split-stepper" aria-label="Number of people">
+                        <button type="button" id="removePerson" aria-label="Remove one person" disabled>−</button>
+                        <output id="peopleCount" aria-live="polite">1</output>
+                        <button type="button" id="addPerson" aria-label="Add one person">+</button>
+                    </div>
+                    <div class="split-result" id="splitResult" aria-live="polite">
+                        <strong id="shareAmount">Not split</strong>
+                        <span id="shareDetail">Add people to divide the clean total.</span>
+                    </div>
+                </section>
             </div>
             <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
-    <script src="script.js?v=12"></script>
+    <script src="script.js?v=14"></script>
 </body>
 </html>

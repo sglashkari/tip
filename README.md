@@ -16,6 +16,7 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
+- Splits the selected clean total among up to 20 people and accounts for every remainder cent
 
 Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 
@@ -44,7 +45,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 - `script.js` — tip calculations and interactions
 - `manifest.webmanifest` — installation metadata
 - `sw.js` — offline asset caching
-- `calculator.png` — original iceberg artwork
+- `hero-iceberg-v2.webp` — optimized original iceberg artwork
 - `favicon.svg` — application icon
 
 ## Calculation
