@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=14">
+    <link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
     <main class="app-shell">
@@ -65,8 +65,27 @@
                         </div>
                     </div>
                 </div>
+                <section class="tip-preferences" aria-label="Tip preferences">
+                    <div class="target-heading">
+                        <label for="targetRate">Aim for</label>
+                        <output id="targetRateValue" for="targetRate">16%</output>
+                    </div>
+                    <div class="target-adjuster">
+                        <button type="button" id="lowerTarget" aria-label="Lower preferred tip percentage">−</button>
+                        <input type="range" id="targetRate" min="5" max="25" step="1" value="16" aria-label="Preferred tip percentage">
+                        <button type="button" id="raiseTarget" aria-label="Raise preferred tip percentage">+</button>
+                    </div>
+                    <fieldset class="rounding-mode">
+                        <legend>Make it a</legend>
+                        <div class="mode-tabs">
+                            <button type="button" class="mode-tab active" data-mode="total" aria-pressed="true">Whole-dollar<br>total</button>
+                            <button type="button" class="mode-tab" data-mode="tip" aria-pressed="false">Whole-dollar<br>tip</button>
+                            <button type="button" class="mode-tab" data-mode="rate" aria-pressed="false">Whole-percent<br>rate</button>
+                        </div>
+                    </fieldset>
+                </section>
                 <fieldset class="tip-fieldset">
-                    <legend>Choose a whole-dollar total</legend>
+                    <legend id="optionLegend">Choose a whole-dollar total</legend>
                     <div class="fit-picker">
                         <div class="fit-picker-heading"><span>Scroll to compare</span><strong id="optionCount">No options yet</strong></div>
                         <div class="option-wheel" id="optionWheel" role="listbox" aria-label="Whole-dollar tip options" tabindex="0">
@@ -86,14 +105,18 @@
                         <button type="button" id="addPerson" aria-label="Add one person">+</button>
                     </div>
                     <div class="split-result" id="splitResult" aria-live="polite">
-                        <strong id="shareAmount">Not split</strong>
-                        <span id="shareDetail">Add people to divide the clean total.</span>
+                        <div class="split-empty" id="splitEmpty">Add people to divide the selected amount.</div>
+                        <div class="split-values" id="splitValues" hidden>
+                            <p><span>Total each</span><strong id="shareAmount">$0.00</strong></p>
+                            <p><span>Tip each</span><strong id="tipShareAmount">$0.00</strong></p>
+                        </div>
+                        <span class="share-detail" id="shareDetail"></span>
                     </div>
                 </section>
             </div>
             <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
-    <script src="script.js?v=14"></script>
+    <script src="script.js?v=15"></script>
 </body>
 </html>

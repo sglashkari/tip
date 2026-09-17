@@ -10,13 +10,15 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 - Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
 - Generates every whole-dollar total with an effective tip between 5% and 25%
 - Defaults to the option closest to a 16% effective tip while preferring rates of at least 14%, and provides a vertically scrolling, snap-to-option list for comparing alternatives
+- Switches among whole-dollar totals, whole-dollar tips, and whole-percent rates
+- Lets the user adjust and remember a preferred tip target from 5% to 25%
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
 - Uses original, optimized hero artwork built around the dining-and-iceberg concept
 - Can be installed as a standalone Progressive Web App (PWA)
 - Works offline after the first visit
 - Scans receipt photos with on-device OCR and asks for confirmation before applying the detected total
-- Splits the selected clean total among up to 20 people and accounts for every remainder cent
+- Splits both the selected total and its tip among up to 20 people and accounts for every remainder cent
 
 Receipt images are processed locally in the browser and are not uploaded by the app. The OCR engine and English model are downloaded on first use, so the first scan requires an internet connection and may take longer.
 
@@ -50,7 +52,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 
 ## Calculation
 
-The app lists whole-dollar totals whose effective tips fall between 5% and 25%. It initially selects the option closest to 16% from options at or above 14% (falling back to all options only when needed), and the scrollable option wheel moves among the other valid totals in one-dollar steps.
+The app can generate options by whole-dollar total, whole-dollar tip, or whole-percent rate. It selects the option closest to the user's preferred rate, initially 16%, while favoring rates of at least 14% when the target is 14% or higher. Preferences stay on the device.
 
 ## License
 

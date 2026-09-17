@@ -12,8 +12,17 @@ const detectedTotalInput = document.querySelector('#detectedTotal');
 const removePersonButton = document.querySelector('#removePerson');
 const addPersonButton = document.querySelector('#addPerson');
 const peopleCountOutput = document.querySelector('#peopleCount');
+const splitEmpty = document.querySelector('#splitEmpty');
+const splitValues = document.querySelector('#splitValues');
 const shareAmount = document.querySelector('#shareAmount');
+const tipShareAmount = document.querySelector('#tipShareAmount');
 const shareDetail = document.querySelector('#shareDetail');
+const targetRateInput = document.querySelector('#targetRate');
+const targetRateValue = document.querySelector('#targetRateValue');
+const lowerTargetButton = document.querySelector('#lowerTarget');
+const raiseTargetButton = document.querySelector('#raiseTarget');
+const optionLegend = document.querySelector('#optionLegend');
+const modeButtons = [...document.querySelectorAll('.mode-tab')];
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 
 let billCents = 0;
@@ -21,6 +30,8 @@ let wholeDollarOptions = [];
 let bestOptionIndex = 0;
 let selectedOptionIndex = 0;
 let peopleCount = 1;
+let targetTipPercentage = 16;
+let roundingMode = 'total';
 
 function makeWholeDollarOptions(bill) {
     if (bill <= 0) return [];
@@ -32,6 +43,34 @@ function makeWholeDollarOptions(bill) {
         options.push({ total, tip, effectivePercentage: tip / bill * 100 });
     }
     return options;
+}
+
+function makeWholeDollarTipOptions(bill) {
+    if (bill <= 0) return [];
+    const minimumTip = Math.ceil(bill * .05 - .000001);
+    const maximumTip = Math.floor(bill * .25 + .000001);
+    const options = [];
+    for (let tip = minimumTip; tip <= maximumTip; tip += 1) {
+        options.push({ total: bill + tip, tip, effectivePercentage: tip / bill * 100 });
+    }
+    return options;
+}
+
+function makeWholePercentageOptions(bill) {
+    if (bill <= 0) return [];
+    const options = [];
+    for (let percentage = 5; percentage <= 25; percentage += 1) {
+        const tip = Math.round(bill * percentage) / 100;
+        if (tip <= 0) continue;
+        options.push({ total: bill + tip, tip, effectivePercentage: tip / bill * 100, requestedPercentage: percentage });
+    }
+    return options;
+}
+
+function makeOptions(bill) {
+    if (roundingMode === 'tip') return makeWholeDollarTipOptions(bill);
+    if (roundingMode === 'rate') return makeWholePercentageOptions(bill);
+    return makeWholeDollarOptions(bill);
 }
 
 function describeOption(option) {
@@ -74,23 +113,34 @@ function renderSplit() {
     addPersonButton.disabled = peopleCount === 20;
 
     if (!option) {
-        shareAmount.textContent = 'Enter a bill';
-        shareDetail.textContent = 'Choose a total before splitting.';
+        splitEmpty.hidden = false;
+        splitValues.hidden = true;
+        splitEmpty.textContent = 'Choose an amount before splitting.';
+        shareDetail.textContent = '';
         return;
     }
     if (peopleCount === 1) {
-        shareAmount.textContent = 'Not split';
-        shareDetail.textContent = 'Add people to divide the clean total.';
+        splitEmpty.hidden = false;
+        splitValues.hidden = true;
+        splitEmpty.textContent = 'Add people to divide the selected amount.';
+        shareDetail.textContent = '';
         return;
     }
 
     const totalCents = Math.round(option.total * 100);
+    const tipCents = Math.round(option.tip * 100);
     const baseShareCents = Math.floor(totalCents / peopleCount);
-    const extraCentShares = totalCents % peopleCount;
-    shareAmount.textContent = `${currency.format(baseShareCents / 100)} each`;
-    shareDetail.textContent = extraCentShares
-        ? `${extraCentShares} ${extraCentShares === 1 ? 'person adds' : 'people add'} 1¢`
-        : `${peopleCount} equal shares`;
+    const baseTipShareCents = Math.floor(tipCents / peopleCount);
+    const extraTotalCents = totalCents % peopleCount;
+    const extraTipCents = tipCents % peopleCount;
+    splitEmpty.hidden = true;
+    splitValues.hidden = false;
+    shareAmount.textContent = currency.format(baseShareCents / 100);
+    tipShareAmount.textContent = currency.format(baseTipShareCents / 100);
+    const remainderNotes = [];
+    if (extraTotalCents) remainderNotes.push(`${extraTotalCents} total ${extraTotalCents === 1 ? 'share is' : 'shares are'} ${currency.format((baseShareCents + 1) / 100)}`);
+    if (extraTipCents) remainderNotes.push(`${extraTipCents} tip ${extraTipCents === 1 ? 'share is' : 'shares are'} ${currency.format((baseTipShareCents + 1) / 100)}`);
+    shareDetail.textContent = remainderNotes.length ? remainderNotes.join(' · ') : `${peopleCount} equal shares`;
 }
 
 function changePeopleCount(change) {
@@ -99,20 +149,67 @@ function changePeopleCount(change) {
     if (navigator.vibrate) navigator.vibrate(8);
 }
 
+function savePreference(key, value) {
+    try { localStorage.setItem(key, String(value)); } catch (_) { /* Preferences are optional. */ }
+}
+
+function setTargetTip(value, save = true) {
+    targetTipPercentage = Math.max(5, Math.min(25, Number(value)));
+    targetRateInput.value = String(targetTipPercentage);
+    targetRateInput.setAttribute('aria-valuetext', `${targetTipPercentage} percent`);
+    targetRateValue.textContent = `${targetTipPercentage}%`;
+    lowerTargetButton.disabled = targetTipPercentage === 5;
+    raiseTargetButton.disabled = targetTipPercentage === 25;
+    if (save) savePreference('icebergTargetTip', targetTipPercentage);
+    calculateTip();
+}
+
+function setRoundingMode(mode, save = true) {
+    roundingMode = ['total', 'tip', 'rate'].includes(mode) ? mode : 'total';
+    const labels = {
+        total: 'Choose a whole-dollar total',
+        tip: 'Choose a whole-dollar tip',
+        rate: 'Choose a whole-percent rate'
+    };
+    optionLegend.textContent = labels[roundingMode];
+    optionWheel.setAttribute('aria-label', labels[roundingMode]);
+    modeButtons.forEach((button) => {
+        const active = button.dataset.mode === roundingMode;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (save) savePreference('icebergRoundingMode', roundingMode);
+    calculateTip();
+}
+
+function loadPreferences() {
+    try {
+        const savedTarget = Number.parseInt(localStorage.getItem('icebergTargetTip'), 10);
+        const savedMode = localStorage.getItem('icebergRoundingMode');
+        if (Number.isFinite(savedTarget)) targetTipPercentage = Math.max(5, Math.min(25, savedTarget));
+        if (['total', 'tip', 'rate'].includes(savedMode)) roundingMode = savedMode;
+    } catch (_) { /* Use defaults when storage is unavailable. */ }
+    setTargetTip(targetTipPercentage, false);
+    setRoundingMode(roundingMode, false);
+}
+
 function buildTipOptions(bill) {
-    wholeDollarOptions = makeWholeDollarOptions(bill);
+    wholeDollarOptions = makeOptions(bill);
     if (!wholeDollarOptions.length) {
         document.querySelector('#optionCount').textContent = 'No options yet';
-        optionWheel.innerHTML = `<p class="wheel-empty">${bill > 0 ? 'No whole-dollar option falls within 5%–25%' : 'Enter a bill to see whole-dollar totals'}</p>`;
-        selectionAnnouncement.textContent = bill > 0 ? 'No whole-dollar option is available in the 5% to 25% range.' : '';
+        optionWheel.innerHTML = `<p class="wheel-empty">${bill > 0 ? 'No option falls within 5%–25%' : 'Enter a bill to see tip options'}</p>`;
+        selectionAnnouncement.textContent = bill > 0 ? 'No option is available in the 5% to 25% range.' : '';
         return;
     }
 
-    const preferredOptions = wholeDollarOptions.filter((option) => option.effectivePercentage >= 14);
+    const preferredFloor = targetTipPercentage >= 14 ? 14 : 5;
+    const preferredOptions = wholeDollarOptions.filter((option) => option.effectivePercentage >= preferredFloor);
     const recommendationPool = preferredOptions.length ? preferredOptions : wholeDollarOptions;
     const bestOption = recommendationPool.reduce((best, option) => {
-        const currentDistance = Math.abs(option.effectivePercentage - 16);
-        const bestDistance = Math.abs(best.effectivePercentage - 16);
+        const currentRate = option.requestedPercentage ?? option.effectivePercentage;
+        const bestRate = best.requestedPercentage ?? best.effectivePercentage;
+        const currentDistance = Math.abs(currentRate - targetTipPercentage);
+        const bestDistance = Math.abs(bestRate - targetTipPercentage);
         return currentDistance < bestDistance ? option : best;
     });
     bestOptionIndex = wholeDollarOptions.findIndex((option) => option === bestOption);
@@ -282,6 +379,10 @@ cameraInput.addEventListener('change', () => scanSelectedReceipt(cameraInput));
 uploadInput.addEventListener('change', () => scanSelectedReceipt(uploadInput));
 removePersonButton.addEventListener('click', () => changePeopleCount(-1));
 addPersonButton.addEventListener('click', () => changePeopleCount(1));
+targetRateInput.addEventListener('input', () => setTargetTip(targetRateInput.value));
+lowerTargetButton.addEventListener('click', () => setTargetTip(targetTipPercentage - 1));
+raiseTargetButton.addEventListener('click', () => setTargetTip(targetTipPercentage + 1));
+modeButtons.forEach((button) => button.addEventListener('click', () => setRoundingMode(button.dataset.mode)));
 document.querySelector('#cancelScan').addEventListener('click', () => { scanResult.hidden = true; billInput.focus(); });
 document.querySelector('#useDetectedTotal').addEventListener('click', () => {
     const detected = Number.parseFloat(detectedTotalInput.value);
@@ -305,4 +406,4 @@ resetButton.addEventListener('click', () => {
 });
 
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-calculateTip();
+loadPreferences();
