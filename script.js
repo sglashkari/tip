@@ -14,6 +14,7 @@ const detectedTotalInput = document.querySelector('#detectedTotal');
 const removePersonButton = document.querySelector('#removePerson');
 const addPersonButton = document.querySelector('#addPerson');
 const peopleCountOutput = document.querySelector('#peopleCount');
+const selectedRateValue = document.querySelector('#selectedRateValue');
 const targetRateValue = document.querySelector('#targetRateValue');
 const lowerTargetButton = document.querySelector('#lowerTarget');
 const raiseTargetButton = document.querySelector('#raiseTarget');
@@ -156,9 +157,9 @@ function renderOptionWheel() {
                 + metric('Bill each', currency.format(split.billEachCents / 100))
             : metric('Total', currency.format(option.total))
                 + metric('Tip', currency.format(option.tip))
-                + metric('Effective', option.effectivePercentage.toFixed(2) + '%');
+                + metric('Bill', currency.format(billCents / 100));
         const groupDetails = peopleCount > 1
-            ? `<span class="option-rate">Effective tip <strong>${option.effectivePercentage.toFixed(2)}%</strong></span>${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
+            ? `${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
             : '';
         const button = document.createElement('button');
         button.type = 'button';
@@ -296,7 +297,11 @@ function buildTipOptions(bill) {
 
 function renderSelectedOption() {
     const option = tipOptions[selectedOptionIndex];
-    if (!option) return;
+    if (!option) {
+        selectedRateValue.textContent = '—';
+        return;
+    }
+    selectedRateValue.textContent = option.effectivePercentage.toFixed(2) + '%';
     const isBest = selectedOptionIndex === bestOptionIndex;
     selectionAnnouncement.textContent = `${isBest ? 'Best fit selected. ' : 'Selected. '}${describeOption(option)}`;
     optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {

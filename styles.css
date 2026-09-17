@@ -16,7 +16,7 @@ button { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
 .mobile-header h2 { margin:0; font-size:1.2rem; }
 .reset { min-height:2.75rem; margin-left:auto; border:0; border-radius:.7rem; background:transparent; color:var(--ink-soft); font-weight:700; padding:.65rem .75rem; cursor:pointer; }
 .reset:active { background:rgba(7,45,58,.06); }
-.form-area { width:min(100%,34rem); margin:auto; }
+.form-area { width:min(100%,34rem); margin:0 auto; }
 .field-group label,.tip-fieldset legend { display:block; margin-bottom:.65rem; color:var(--ink-soft); font-weight:700; font-size:.92rem; }
 .money-input { min-width:0; display:flex; align-items:center; gap:.35rem; border-bottom:2px solid var(--ink); }
 .money-input span { font-size:2rem; font-weight:600; }
@@ -130,11 +130,29 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
 .mode-tabs { gap:.2rem; padding:.25rem; background:#edf3f4; border-radius:.8rem; }
 .mode-tab { min-height:2.75rem; background:transparent; border:0; font-size:.85rem; }
 .mode-tab.active { background:white; box-shadow:0 2px 8px rgba(7,45,58,.1); }
-.option-rate { grid-column:1/-1; margin-top:.3rem; color:var(--muted); font-size:.8rem; }
-.option-rate strong { margin-left:.3rem; color:#075d64; font-size:.95rem; font-variant-numeric:tabular-nums; }
 @media (max-width:760px) {
  .brand-panel { height:15dvh; min-height:6rem; }
  .calculator { margin-top:12dvh; min-height:88dvh; }
  .mobile-header { margin-bottom:.85rem; }
  .mini-mark { width:2rem; height:2rem; }
+}
+
+/* Keep the form near the header and make adjacent choices readable. */
+.selected-rate { display:flex; justify-content:center; align-items:baseline; gap:.35rem; margin:.45rem 0 0; color:var(--muted); font-size:.8rem; }
+.setup-control .selected-rate output { color:#075d64; font-size:1rem; font-weight:800; }
+.fit-picker-heading { padding:.15rem .2rem .5rem; }
+.fit-picker-heading>span { color:var(--ink); font-weight:800; font-size:1rem; }
+.fit-picker-heading>strong { color:#075d64; font-size:.8rem; background:#e7f8f9; padding:.3rem .5rem; border-radius:999px; }
+.option-wheel { height:15rem; padding-block:4.75rem; mask-image:none; -webkit-mask-image:none; scrollbar-width:thin; scrollbar-color:#80b6ba transparent; }
+.option-wheel::-webkit-scrollbar { display:block; width:4px; }
+.option-wheel::-webkit-scrollbar-thumb { background:#80b6ba; border-radius:4px; }
+.fit-option { min-height:5.5rem; opacity:1; transform:none; border-color:var(--line); background:#f5f9f9; margin-block:.6rem; }
+.fit-option.active { border:2px solid #299da5; background:white; box-shadow:0 3px 10px rgba(7,45,58,.1); }
+.option-wheel:focus-visible { outline:2px solid var(--coral); outline-offset:2px; }
+@media (max-width:760px) {
+ .brand-panel { height:9dvh; min-height:0; }
+ .calculator { margin-top:7dvh; min-height:0; padding-bottom:max(.65rem,env(safe-area-inset-bottom)); }
+ .form-area { margin:0; }
+ .mobile-header { margin-bottom:.65rem; }
+ .option-wheel { height:clamp(15rem,34dvh,20rem); padding-block:calc((clamp(15rem,34dvh,20rem) - 5.5rem)/2); }
 }
