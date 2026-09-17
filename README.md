@@ -9,7 +9,7 @@ A fast, responsive tip calculator that adjusts the tip so the final bill rounds 
 - Calculates the tip, rounded total, and effective tip rate as you type
 - Accepts bill amounts as calculator-style cents entry (`1234` becomes `$12.34`)
 - Generates every whole-dollar total with an effective tip between 5% and 25%
-- Defaults to the option closest to a 15% effective tip and provides a slider for comparing alternatives
+- Defaults to the option closest to a 15% effective tip and provides a vertically scrolling, snap-to-option list for comparing alternatives
 - Uses a phone-first interface with large touch targets and safe-area support
 - Adapts to a split-screen layout on desktop
 - Can be installed as a standalone Progressive Web App (PWA)
@@ -48,7 +48,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 
 ## Calculation
 
-The app lists whole-dollar totals whose effective tips fall between 5% and 25%. It initially selects the option closest to 15%, and the slider moves among the other valid totals in one-dollar steps.
+The app lists whole-dollar totals whose effective tips fall between 5% and 25%. It initially selects the option closest to 15%, and the scrollable option wheel moves among the other valid totals in one-dollar steps.
 
 ## License
 

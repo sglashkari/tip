@@ -1,7 +1,7 @@
 const billInput = document.querySelector('#billAmount');
 const resetButton = document.querySelector('#resetButton');
 const recommendationButton = document.querySelector('#recommendation');
-const tipSlider = document.querySelector('#tipSlider');
+const optionWheel = document.querySelector('#optionWheel');
 const receiptInput = document.querySelector('#receiptInput');
 const scanStatus = document.querySelector('#scanStatus');
 const scanMessage = document.querySelector('#scanMessage');
@@ -31,19 +31,43 @@ function describeOption(option) {
     return `${currency.format(option.total)} total · ${currency.format(option.tip)} tip · ${option.effectivePercentage.toFixed(2)}%`;
 }
 
+function renderOptionWheel() {
+    optionWheel.replaceChildren();
+    wholeDollarOptions.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'fit-option';
+        button.dataset.index = index;
+        button.setAttribute('role', 'option');
+        button.setAttribute('aria-label', describeOption(option));
+        button.innerHTML = `<span class="option-total">${currency.format(option.total)}${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}</span><span class="option-tip">Tip ${currency.format(option.tip)}</span><span class="option-rate">${option.effectivePercentage.toFixed(2)}%</span>`;
+        button.addEventListener('click', () => selectOption(index));
+        optionWheel.appendChild(button);
+    });
+    requestAnimationFrame(() => centerSelectedOption('auto'));
+}
+
+function centerSelectedOption(behavior = 'smooth') {
+    const item = optionWheel.querySelector(`[data-index="${selectedOptionIndex}"]`);
+    if (!item) return;
+    const top = item.offsetTop - optionWheel.clientHeight / 2 + item.offsetHeight / 2;
+    optionWheel.scrollTo({ top, behavior });
+}
+
+function selectOption(index, center = true) {
+    selectedOptionIndex = Math.max(0, Math.min(wholeDollarOptions.length - 1, index));
+    renderSelectedOption();
+    if (center) centerSelectedOption();
+}
+
 function buildTipOptions(bill) {
     wholeDollarOptions = makeWholeDollarOptions(bill);
     if (!wholeDollarOptions.length) {
         recommendationButton.disabled = true;
         document.querySelector('#bestFitSummary').textContent = bill > 0 ? 'No whole-dollar total falls between 5% and 25%' : 'Enter a bill to see options';
         document.querySelector('#bestFitAction').textContent = 'Default';
-        document.querySelector('#selectedFit').textContent = '—';
-        document.querySelector('#lowestFit').textContent = '5% minimum';
-        document.querySelector('#highestFit').textContent = '25% maximum';
-        tipSlider.disabled = true;
-        tipSlider.min = 0;
-        tipSlider.max = 0;
-        tipSlider.value = 0;
+        document.querySelector('#optionCount').textContent = 'No options yet';
+        optionWheel.innerHTML = `<p class="wheel-empty">${bill > 0 ? 'No whole-dollar option falls within 5%–25%' : 'Enter a bill to see whole-dollar totals'}</p>`;
         return;
     }
 
@@ -57,12 +81,8 @@ function buildTipOptions(bill) {
     document.querySelector('#bestFitSummary').textContent = describeOption(wholeDollarOptions[bestOptionIndex]);
     document.querySelector('#bestFitAction').textContent = 'Default';
     recommendationButton.setAttribute('aria-label', `Use best whole-dollar fit: ${describeOption(wholeDollarOptions[bestOptionIndex])}`);
-    tipSlider.disabled = wholeDollarOptions.length === 1;
-    tipSlider.min = 0;
-    tipSlider.max = wholeDollarOptions.length - 1;
-    tipSlider.value = bestOptionIndex;
-    document.querySelector('#lowestFit').textContent = `${wholeDollarOptions[0].effectivePercentage.toFixed(2)}%`;
-    document.querySelector('#highestFit').textContent = `${wholeDollarOptions.at(-1).effectivePercentage.toFixed(2)}%`;
+    document.querySelector('#optionCount').textContent = `${wholeDollarOptions.length} option${wholeDollarOptions.length === 1 ? '' : 's'}`;
+    renderOptionWheel();
 }
 
 function renderSelectedOption() {
@@ -79,10 +99,13 @@ function renderSelectedOption() {
     document.querySelector('#tipAmount').textContent = currency.format(option.tip);
     document.querySelector('#totalAmount').textContent = currency.format(option.total);
     document.querySelector('#effectiveTip').textContent = `${option.effectivePercentage.toFixed(2)}%`;
-    document.querySelector('#selectedFit').textContent = `${currency.format(option.tip)} · ${option.effectivePercentage.toFixed(2)}%`;
-    document.querySelector('#selectionLabel').textContent = isBest ? 'Best fit selected' : `Option ${selectedOptionIndex + 1} of ${wholeDollarOptions.length}`;
     document.querySelector('#bestFitAction').textContent = isBest ? 'Selected' : 'Use best';
     document.querySelector('#roundingNote').textContent = isBest ? 'Recommended: closest whole-dollar option to a 15% tip.' : 'Alternative whole-dollar option selected.';
+    optionWheel.querySelectorAll('.fit-option').forEach((item, index) => {
+        const active = index === selectedOptionIndex;
+        item.classList.toggle('active', active);
+        item.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
 }
 
 function calculateTip() {
@@ -200,9 +223,25 @@ async function scanReceipt(file) {
 }
 
 billInput.addEventListener('input', handleBillInput);
-tipSlider.addEventListener('input', () => {
-    selectedOptionIndex = Number.parseInt(tipSlider.value, 10);
-    renderSelectedOption();
+let wheelScrollTimer;
+optionWheel.addEventListener('scroll', () => {
+    clearTimeout(wheelScrollTimer);
+    wheelScrollTimer = setTimeout(() => {
+        const wheelCenter = optionWheel.getBoundingClientRect().top + optionWheel.clientHeight / 2;
+        const items = [...optionWheel.querySelectorAll('.fit-option')];
+        if (!items.length) return;
+        const nearest = items.reduce((best, item) => {
+            const rect = item.getBoundingClientRect();
+            const distance = Math.abs(rect.top + rect.height / 2 - wheelCenter);
+            return distance < best.distance ? { index: Number(item.dataset.index), distance } : best;
+        }, { index: selectedOptionIndex, distance: Infinity });
+        if (nearest.index !== selectedOptionIndex) selectOption(nearest.index, false);
+    }, 70);
+});
+optionWheel.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    selectOption(selectedOptionIndex + (event.key === 'ArrowDown' ? 1 : -1));
 });
 receiptInput.addEventListener('change', () => {
     const file = receiptInput.files?.[0];
@@ -222,9 +261,7 @@ document.querySelector('#useDetectedTotal').addEventListener('click', () => {
 });
 recommendationButton.addEventListener('click', () => {
     if (!wholeDollarOptions.length) return;
-    selectedOptionIndex = bestOptionIndex;
-    tipSlider.value = bestOptionIndex;
-    renderSelectedOption();
+    selectOption(bestOptionIndex);
 });
 resetButton.addEventListener('click', () => {
     billCents = 0;

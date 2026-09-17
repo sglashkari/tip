@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=9">
+    <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
     <main class="app-shell">
@@ -65,9 +65,11 @@
                         <span class="best-action" id="bestFitAction">Default</span>
                     </button>
                     <div class="fit-picker">
-                        <div class="fit-picker-heading"><span id="selectionLabel">Selected option</span><strong id="selectedFit">—</strong></div>
-                        <input type="range" id="tipSlider" min="0" max="0" step="1" value="0" disabled aria-label="Choose among whole-dollar tip options">
-                        <div class="fit-range-labels"><span id="lowestFit">5% minimum</span><span>Slide to compare</span><span id="highestFit">25% maximum</span></div>
+                        <div class="fit-picker-heading"><span>Scroll to compare</span><strong id="optionCount">No options yet</strong></div>
+                        <div class="option-wheel" id="optionWheel" role="listbox" aria-label="Whole-dollar tip options" tabindex="0">
+                            <p class="wheel-empty">Enter a bill to see whole-dollar totals</p>
+                        </div>
+                        <div class="wheel-cue"><span>Lower tip</span><span aria-hidden="true">↕</span><span>Higher tip</span></div>
                     </div>
                 </fieldset>
                 <div class="result-card" aria-live="polite">
@@ -79,6 +81,6 @@
             <footer><span>Receipt scans stay on this device</span><span>© 2023 DALL·E 3</span></footer>
         </section>
     </main>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>
