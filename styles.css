@@ -158,3 +158,17 @@ footer { display:flex; justify-content:space-between; gap:1rem; margin-top:2rem;
 .bill-share { display:flex; justify-content:center; align-items:baseline; gap:.35rem; margin:.45rem 0 0; color:var(--muted); font-size:.8rem; }
 .bill-share[hidden] { display:none; }
 .setup-control .bill-share output { color:#075d64; font-size:1rem; font-weight:800; }
+
+/* Five number-only rows. The fixed center stays legible while the edges fade. */
+.option-wheel {
+    height:17rem; padding:6.8rem .15rem; scrollbar-width:none;
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.5) 20%,#000 42%,#000 58%,rgba(0,0,0,.5) 80%,rgba(0,0,0,.12));
+    -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.12),rgba(0,0,0,.5) 20%,#000 42%,#000 58%,rgba(0,0,0,.5) 80%,rgba(0,0,0,.12));
+}
+.option-wheel::-webkit-scrollbar { display:none; }
+.fit-option { height:3rem; min-height:3rem; margin:.2rem 0; padding:.4rem .45rem; border-width:2px; border-color:transparent; border-radius:.7rem; background:transparent; }
+.fit-option.active { border-color:#299da5; background:white; }
+.option-metric strong { font-size:clamp(1rem,4.2vw,1.25rem); }
+.fit-option .option-best { font-size:.5rem; padding:.12rem .35rem; top:-.45rem; }
+.fit-option.active::before { width:1rem; height:1rem; font-size:.6rem; top:-.4rem; }
+@media (max-width:760px) { .option-wheel { height:17rem; padding-block:6.8rem; } }

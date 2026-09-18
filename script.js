@@ -31,7 +31,7 @@ let selectedOptionIndex = 0;
 let peopleCount = 1;
 let targetTipPercentage = 16;
 let roundingMode = 'total';
-const MAX_OPTION_COUNT = 81;
+const MAX_OPTION_COUNT = 11; // Generate nearby candidates; display at most nine.
 const MAX_BILL_DIGITS = 15;
 
 function tapFeedback() {
@@ -40,17 +40,10 @@ function tapFeedback() {
 
 function sampledIntegers(minimum, maximum, preferred) {
     if (maximum < minimum) return [];
-    const count = maximum - minimum + 1;
-    if (count <= MAX_OPTION_COUNT) return Array.from({ length: count }, (_, index) => minimum + index);
-
-    const preferredFloor = Math.max(minimum, Math.min(maximum, Math.floor(preferred)));
-    const preferredCeiling = Math.max(minimum, Math.min(maximum, Math.ceil(preferred)));
-    const values = new Set([minimum, maximum, preferredFloor, preferredCeiling]);
-    const remainingSlots = MAX_OPTION_COUNT - values.size;
-    for (let index = 1; index <= remainingSlots; index += 1) {
-        values.add(Math.round(minimum + (maximum - minimum) * index / (remainingSlots + 1)));
-    }
-    return [...values].sort((a, b) => a - b);
+    const count = Math.min(MAX_OPTION_COUNT, maximum - minimum + 1);
+    const center = Math.max(minimum, Math.min(maximum, Math.round(preferred)));
+    const start = Math.max(minimum, Math.min(maximum - count + 1, center - Math.floor(count / 2)));
+    return Array.from({ length: count }, (_, index) => start + index);
 }
 
 function makeWholeDollarOptions(bill) {
@@ -151,7 +144,7 @@ function renderOptionWheel() {
     optionWheel.replaceChildren();
     tipOptions.forEach((option, index) => {
         const split = splitOption(option);
-        const metric = (label, value) => `<span class="option-metric"><span class="option-label">${label}</span><strong>${value}</strong></span>`;
+        const metric = (label, value) => `<span class="option-metric"><strong>${value}</strong></span>`;
         const metrics = peopleCount > 1
             ? metric('Total each', currency.format(split.totalEachCents / 100))
                 + metric('Tip each', currency.format(split.tipEachCents / 100))
@@ -159,16 +152,13 @@ function renderOptionWheel() {
             : metric('Total', currency.format(option.total))
                 + metric('Tip', currency.format(option.tip))
                 + metric('Percent', option.effectivePercentage.toFixed(2) + '%');
-        const groupDetails = peopleCount > 1
-            ? `${split.roundedUp ? '<span class="option-split-note">Shares rounded up to the nearest cent</span>' : ''}`
-            : '';
         const button = document.createElement('button');
         button.type = 'button';
         button.className = `fit-option${index === bestOptionIndex ? ' best' : ''}`;
         button.dataset.index = index;
         button.setAttribute('role', 'option');
         button.setAttribute('aria-label', describeOption(option));
-        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}${metrics}${groupDetails}`;
+        button.innerHTML = `${index === bestOptionIndex ? '<span class="option-best">Best fit</span>' : ''}${metrics}`;
         button.addEventListener('click', () => {
             selectOption(index);
             tapFeedback();
@@ -293,6 +283,9 @@ function buildTipOptions(bill) {
         return currentDistance < bestDistance ? option : best;
     });
     bestOptionIndex = tipOptions.findIndex((option) => option === bestOption);
+    const windowStart = Math.max(0, Math.min(tipOptions.length - 9, bestOptionIndex - 4));
+    tipOptions = tipOptions.slice(windowStart, windowStart + 9);
+    bestOptionIndex -= windowStart;
     selectedOptionIndex = bestOptionIndex;
     document.querySelector('#optionCount').textContent = `${tipOptions.length} option${tipOptions.length === 1 ? '' : 's'}`;
     renderOptionWheel();
